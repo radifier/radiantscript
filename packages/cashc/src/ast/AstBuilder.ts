@@ -33,6 +33,10 @@ import {
   InstantiationNode,
   TupleAssignmentNode,
   NullaryOpNode,
+  PushDataNode,
+  PushRefNode,
+  StateScriptNode,
+  UnsetNode,
 } from './AST.js';
 import { UnaryOperator, BinaryOperator, NullaryOperator } from './Operator.js';
 import {
@@ -63,11 +67,19 @@ import {
   InstantiationContext,
   NullaryOpContext,
   UnaryIntrospectionOpContext,
+  PushDataStatementContext,
+  PushRefStatementContext,
+  PushRefExpressionContext,
+  PushRefContext,
+  IntrospectionFunctionCallContext,
+  UnsetStatementContext,
+  StateScriptStatementContext,
 } from '../grammar/CashScriptParser.js';
 import { CashScriptVisitor } from '../grammar/CashScriptVisitor.js';
 import { Location } from './Location.js';
 import {
   NumberUnit,
+  PushRefOp,
   TimeOp,
 } from './Globals.js';
 import { getPragmaName, PragmaName, getVersionOpFromCtx } from './Pragma.js';
@@ -102,7 +114,7 @@ export default class AstBuilder
 
   processPragma(ctx: PragmaDirectiveContext): void {
     const pragmaName = getPragmaName(ctx.pragmaName().text);
-    if (pragmaName !== PragmaName.CASHSCRIPT) throw new Error(); // Shouldn't happen
+    if (pragmaName !== PragmaName.RADIANTSCRIPT) throw new Error(); // Shouldn't happen
 
     // Strip any -beta tags
     const actualVersion = version.replace(/-.*/g, '');
@@ -118,9 +130,21 @@ export default class AstBuilder
 
   visitContractDefinition(ctx: ContractDefinitionContext): ContractNode {
     const name = ctx.Identifier().text;
-    const parameters = ctx.parameterList().parameter().map((p) => this.visit(p) as ParameterNode);
+    const contractParameters = ctx.parameterList()[0].parameter().map((p) => {
+      const node = this.visit(p) as ParameterNode;
+      node.scope = 'contract';
+      return node;
+    });
+    const functionParameters = ctx.parameterList()[1]?.parameter().map(
+      (p) => this.visit(p) as ParameterNode,
+    ) || [];
+    const stateScriptStatement = ctx.stateScriptStatement();
+    const stateScript = stateScriptStatement && this.visit(stateScriptStatement) as StateScriptNode;
+    const statements = ctx.statement().map((s) => this.visit(s) as StatementNode);
     const functions = ctx.functionDefinition().map((f) => this.visit(f) as FunctionDefinitionNode);
-    const contract = new ContractNode(name, parameters, functions);
+    const contract = new ContractNode(
+      name, contractParameters, functions, functionParameters, stateScript, statements,
+    );
     contract.location = Location.fromCtx(ctx);
     return contract;
   }
@@ -140,7 +164,8 @@ export default class AstBuilder
   visitParameter(ctx: ParameterContext): ParameterNode {
     const type = parseType(ctx.typeName().text);
     const name = ctx.Identifier().text;
-    const parameter = new ParameterNode(type, name);
+    const modifier = ctx.modifier()?.text ?? '';
+    const parameter = new ParameterNode(type, name, modifier);
     parameter.location = Location.fromCtx(ctx);
     return parameter;
   }
@@ -259,11 +284,20 @@ export default class AstBuilder
   }
 
   visitUnaryIntrospectionOp(ctx: UnaryIntrospectionOpContext): UnaryOpNode {
-    const operator = `${ctx._scope.text}[i]${ctx._op.text}` as UnaryOperator;
+    const operator = `${ctx._scope.text}[i].${ctx._op.text}` as UnaryOperator;
     const expression = this.visit(ctx.expression());
     const unaryOp = new UnaryOpNode(operator, expression);
     unaryOp.location = Location.fromCtx(ctx);
     return unaryOp;
+  }
+
+  visitIntrospectionFunctionCall(ctx: IntrospectionFunctionCallContext): FunctionCallNode {
+    const identifier = new IdentifierNode(`${ctx._scope.text}.${ctx.Identifier().text}`);
+    identifier.location = Location.fromToken(ctx.Identifier().symbol);
+    const parameters = ctx.expressionList().expression().map((e) => this.visit(e));
+    const functionCall = new FunctionCallNode(identifier, parameters);
+    functionCall.location = Location.fromCtx(ctx);
+    return functionCall;
   }
 
   visitUnaryOp(ctx: UnaryOpContext): UnaryOpNode {
@@ -377,5 +411,64 @@ export default class AstBuilder
     const hexLiteral = new HexLiteralNode(hexValue);
     hexLiteral.location = Location.fromCtx(ctx);
     return hexLiteral;
+  }
+
+  visitPushDataStatement(ctx: PushDataStatementContext): PushDataNode {
+    let data;
+    if (ctx.HexLiteral()) {
+      const hexString = ctx.HexLiteral()?.text || '';
+      const hexValue = hexToBin(hexString.substring(2));
+      const hexLiteral = new HexLiteralNode(hexValue);
+      hexLiteral.location = Location.fromCtx(ctx);
+      data = hexLiteral;
+    } else if (ctx.Identifier()) {
+      data = new IdentifierNode(ctx.Identifier()?.text || '');
+    }
+
+    const pushData = new PushDataNode(data as (HexLiteralNode | IdentifierNode));
+    pushData.location = Location.fromCtx(ctx);
+    return pushData;
+  }
+
+  visitPushRefStatement(ctx: PushRefStatementContext): PushRefNode {
+    const pushRef = this.visit(ctx.pushRef()) as PushRefNode;
+    pushRef.drop = true;
+    return pushRef;
+  }
+
+  visitPushRefExpression(ctx: PushRefExpressionContext): PushRefNode {
+    return this.visit(ctx.pushRef()) as PushRefNode;
+  }
+
+  visitPushRef(ctx: PushRefContext): PushRefNode {
+    const op = ctx._op.text as PushRefOp;
+    let ref;
+    if (ctx.HexLiteral()) {
+      const hexString = ctx.HexLiteral()?.text || '';
+      const hexValue = hexToBin(hexString.substring(2));
+      const hexLiteral = new HexLiteralNode(hexValue);
+      hexLiteral.location = Location.fromCtx(ctx);
+      ref = hexLiteral;
+    } else if (ctx.Identifier()) {
+      ref = new IdentifierNode(ctx.Identifier()?.text || '');
+    }
+
+    const pushRef = new PushRefNode(op, ref as (HexLiteralNode | IdentifierNode), false);
+    pushRef.location = Location.fromCtx(ctx);
+    return pushRef;
+  }
+
+  visitStateScriptStatement(ctx: StateScriptStatementContext): StateScriptNode {
+    const stateScriptBlock = this.visit(ctx._stateScriptBlock) as StatementNode;
+    return new StateScriptNode(stateScriptBlock);
+  }
+
+  visitUnsetStatement(ctx: UnsetStatementContext): UnsetNode {
+    const identifier = new IdentifierNode(ctx.Identifier().text);
+    identifier.location = Location.fromToken(ctx.Identifier().symbol);
+
+    const unset = new UnsetNode(identifier);
+    unset.location = Location.fromCtx(ctx);
+    return unset;
   }
 }

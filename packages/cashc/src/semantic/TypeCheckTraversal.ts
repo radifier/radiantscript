@@ -27,6 +27,10 @@ import {
   InstantiationNode,
   TupleAssignmentNode,
   NullaryOpNode,
+  PushDataNode,
+  PushRefNode,
+  ParameterNode,
+  HexLiteralNode,
 } from '../ast/AST.js';
 import AstTraversal from '../ast/AstTraversal.js';
 import {
@@ -40,9 +44,10 @@ import {
   IndexOutOfBoundsError,
   CastSizeError,
   TupleAssignmentError,
+  PushTypeError,
 } from '../Errors.js';
 import { BinaryOperator, NullaryOperator, UnaryOperator } from '../ast/Operator.js';
-import { GlobalFunction } from '../ast/Globals.js';
+import { GlobalFunction, Modifier } from '../ast/Globals.js';
 
 export default class TypeCheckTraversal extends AstTraversal {
   visitVariableDefinition(node: VariableDefinitionNode): Node {
@@ -258,7 +263,9 @@ export default class TypeCheckTraversal extends AstTraversal {
       case UnaryOperator.INPUT_VALUE:
       case UnaryOperator.INPUT_OUTPOINT_INDEX:
       case UnaryOperator.INPUT_SEQUENCE_NUMBER:
+      case UnaryOperator.INPUT_STATESEPARATOR_INDEX:
       case UnaryOperator.OUTPUT_VALUE:
+      case UnaryOperator.OUTPUT_STATESEPARATOR_INDEX:
         expectInt(node, node.expression.type);
         node.type = PrimitiveType.INT;
         return node;
@@ -269,8 +276,19 @@ export default class TypeCheckTraversal extends AstTraversal {
         node.type = new BytesType();
         return node;
       case UnaryOperator.INPUT_OUTPOINT_HASH:
+      case UnaryOperator.INPUT_REFHASH_DATA_SUMMARY:
+      case UnaryOperator.INPUT_CODESCRIPTBYTECODE:
+      case UnaryOperator.INPUT_STATESCRIPTBYTECODE:
+      case UnaryOperator.OUTPUT_REFHASH_DATA_SUMMARY:
+      case UnaryOperator.OUTPUT_CODESCRIPTBYTECODE:
+      case UnaryOperator.OUTPUT_STATESCRIPTBYTECODE:
         expectInt(node, node.expression.type);
         node.type = new BytesType(32);
+        return node;
+      case UnaryOperator.INPUT_REF_DATA_SUMMARY:
+      case UnaryOperator.OUTPUT_REF_DATA_SUMMARY:
+        expectInt(node, node.expression.type);
+        node.type = new BytesType();
         return node;
       default:
         return node;
@@ -317,9 +335,42 @@ export default class TypeCheckTraversal extends AstTraversal {
     node.type = node.definition.type;
     return node;
   }
+
+  visitPushData(node: PushDataNode): Node {
+    node.data = this.visit(node.data) as (HexLiteralNode | IdentifierNode);
+    expectAnyOfTypes(node, node.data.type, [new BytesType()]);
+
+    const identifier = (node.data as IdentifierNode);
+    if (identifier.name) {
+      const parameter = identifier.definition?.definition as ParameterNode;
+      if (parameter?.modifier !== Modifier.CONSTANT || parameter?.scope !== 'contract') {
+        throw new PushTypeError(node.data);
+      }
+    }
+
+    node.type = PrimitiveType.BOOL;
+    return node;
+  }
+
+  visitPushRef(node: PushRefNode): Node {
+    node.ref = this.visit(node.ref) as (HexLiteralNode | IdentifierNode);
+    expectAnyOfTypes(node, node.ref.type, [new BytesType(36)]);
+
+    const identifier = (node.ref as IdentifierNode);
+    if (identifier.name) {
+      const parameter = identifier.definition?.definition as ParameterNode;
+      if (parameter?.modifier !== Modifier.CONSTANT || parameter?.scope !== 'contract') {
+        throw new PushTypeError(node.ref);
+      }
+    }
+
+    node.type = new BytesType(36);
+    return node;
+  }
 }
 
-type ExpectedNode = BinaryOpNode | UnaryOpNode | TimeOpNode | TupleIndexOpNode;
+type ExpectedNode =
+  BinaryOpNode | UnaryOpNode | TimeOpNode | TupleIndexOpNode | PushRefNode | PushDataNode;
 function expectAnyOfTypes(node: ExpectedNode, actual?: Type, expectedTypes?: Type[]): void {
   if (!expectedTypes || expectedTypes.length === 0) return;
   if (expectedTypes.find((expected) => implicitlyCastable(actual, expected))) {

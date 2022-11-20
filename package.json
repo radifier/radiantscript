@@ -2,8 +2,8 @@
   "name": "root",
   "private": true,
   "workspaces": [
-    "packages/*",
-    "examples"
+    "packages/cashc",
+    "packages/utils"
   ],
   "devDependencies": {
     "@jest/reporters": "^26.6.2",

@@ -1,0 +1,15 @@
+pragma radiantscript ^0.1.0;
+
+contract FungibleToken(bytes36 constant $ref, bytes20 constant $pkh)(sig s, pubkey pk) {
+    state {
+        require(hash160(pk) == $pkh);
+        require(checkSig(s, pk));
+    }
+
+    function spend() {
+        bytes36 ref = pushInputRef($ref);
+        bytes32 csh = hash256(tx.inputs[this.activeInputIndex].codeScript);
+        require(tx.outputs.codeScriptCount(csh) == tx.outputs.refOutputCount(ref));
+        require(tx.inputs.codeScriptValueSum(csh) == tx.outputs.codeScriptValueSum(csh));
+    }
+}

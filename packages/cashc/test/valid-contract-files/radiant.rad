@@ -1,0 +1,119 @@
+pragma radiantscript ^0.1.0;
+
+contract Radiant(bytes36 constant $ref) {
+    state {
+        require(true);
+    }
+
+    function spend() {
+        // Push ref expressions
+        bytes ref1 = pushInputRef(0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa00000000);
+        require(ref1 != 0x0);
+        bytes ref2 = requireInputRef(0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb00000000);
+        require(ref2 != 0x0);
+        bytes36 ref3 = disallowPushInputRef(0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc00000000);
+        require(ref3 != 0x0);
+        bytes ref4 = disallowPushInputRefSibling(0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd00000000);
+        require(ref4 != 0x0);
+        bytes ref5 = pushInputRefSingleton(0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee00000000);
+        require(ref5 != 0x0);
+
+        // Push ref statements
+        pushInputRef(0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa00000000);
+        requireInputRef(0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb00000000);
+        disallowPushInputRef(0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc00000000);
+        disallowPushInputRefSibling(0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd00000000);
+        pushInputRefSingleton(0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee00000000);
+
+        // OP_REFHASHDATASUMMARY_UTXO
+        require(tx.inputs[1].refHashDataSummary == 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff);
+
+        // OP_REFHASHVALUESUM_UTXOS
+        require(tx.inputs.refHashValueSum(0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa) == 1);
+
+        // OP_REFHASHDATASUMMARY_OUTPUT
+        require(tx.outputs[1].refHashDataSummary == 0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb);
+
+        // OP_REFHASHVALUESUM_OUTPUTS
+        require(tx.outputs.refHashValueSum(0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc) == 1);
+
+        // OP_REFTYPE_UTXO
+        require(tx.inputs.refType(0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd00000000) == 1);
+
+        // OP_REFTYPE_OUTPUT
+        require(tx.outputs.refType(0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee00000000) == 1);
+
+        // OP_REFVALUESUM_UTXOS
+        require(tx.inputs.refValueSum(0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00000000) == 1);
+
+        // OP_REFVALUESUM_OUTPUTS
+        require(tx.outputs.refValueSum(0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa00000000) == 1);
+
+        // OP_REFOUTPUTCOUNT_UTXOS
+        int count1 = tx.inputs.refOutputCount(0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb00000000);
+        require(count1 == 1);
+
+        // OP_REFOUTPUTCOUNT_OUTPUTS
+        require(tx.outputs.refOutputCount(0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc00000000) == 1);
+
+        // OP_REFOUTPUTCOUNTZEROVALUED_UTXOS
+        require(tx.inputs.zeroValue.refOutputCount(0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd00000000) == 1);
+
+        // OP_REFOUTPUTCOUNTZEROVALUED_OUTPUTS
+        require(tx.outputs.zeroValue.refOutputCount(0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee00000000) == 1);
+
+        // OP_REFDATASUMMARY_UTXO
+        require(tx.inputs[1].refDataSummary == 0x00);
+
+        // OP_REFDATASUMMARY_OUTPUT
+        require(tx.outputs[1].refDataSummary == 0x00);
+
+        // OP_CODESCRIPTHASHVALUESUM_UTXOS
+        require(tx.inputs.codeScriptValueSum(0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff) == 1);
+
+        // OP_CODESCRIPTHASHVALUESUM_OUTPUTS
+        require(tx.outputs.codeScriptValueSum(0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa) == 1);
+
+        // OP_CODESCRIPTHASHOUTPUTCOUNT_UTXOS
+        require(tx.inputs.codeScriptCount(0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb) == 1);
+
+        // OP_CODESCRIPTHASHOUTPUTCOUNT_OUTPUTS
+        require(tx.outputs.codeScriptCount(0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc) == 1);
+
+        // OP_CODESCRIPTHASHZEROVALUEDOUTPUTCOUNT_UTXOS
+        require(tx.inputs.zeroValue.codeScriptCount(0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd) == 1);
+
+        // OP_CODESCRIPTHASHZEROVALUEDOUTPUTCOUNT_OUTPUTS
+        require(tx.outputs.zeroValue.codeScriptCount(0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee) == 1);
+
+        // OP_CODESCRIPTBYTECODE_UTXO
+        require(tx.inputs[1].codeScript == 0x00);
+
+        // OP_CODESCRIPTBYTECODE_OUTPUT
+        require(tx.outputs[1].codeScript == 0x00);
+
+        // OP_STATESCRIPTBYTECODE_UTXO
+        require(tx.inputs[1].stateScript == 0x00);
+
+        // OP_STATESCRIPTBYTECODE_OUTPUT
+        require(tx.outputs[1].stateScript == 0x00);
+
+        // OP_STATESEPARATORINDEX_UTXO
+        require(tx.inputs[1].stateSeparatorIndex == 1);
+
+        // OP_STATESEPARATORINDEX_OUTPUT
+        require(tx.outputs[1].stateSeparatorIndex == 1);
+
+        // OP_SHA512_256
+        require(sha512_256(0xff) == 0x00);
+
+        // OP_HASH512_256
+        require(hash512_256(0xff) == 0x00);
+
+        // Push ref with identifier
+        pushInputRef($ref);
+
+        require(true);
+    }
+}
+

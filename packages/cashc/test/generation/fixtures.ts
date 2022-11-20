@@ -1,7 +1,4 @@
 import { Artifact } from '@cashscript/utils';
-import fs from 'fs';
-import path from 'path';
-import { version } from '../../src/index.js';
 
 interface Fixture {
   fn: string,
@@ -12,31 +9,41 @@ export const fixtures: Fixture[] = [
   {
     fn: 'p2pkh.cash',
     artifact: {
-      contractName: 'P2PKH',
-      constructorInputs: [{ name: 'pkh', type: 'bytes20' }],
-      abi: [{ name: 'spend', inputs: [{ name: 'pk', type: 'pubkey' }, { name: 's', type: 'sig' }] }],
-      bytecode:
+      version: 9,
+      compilerVersion: 'radc 0.1.0',
+      contract: 'P2PKH',
+      abi: [
+        {
+          type: 'function', index: 0, name: 'spend', params: [{ name: 'pk', type: 'PubKey' }, { name: 's', type: 'Sig' }],
+        },
+        {
+          type: 'constructor', params: [{ name: 'pkh', type: 'Ripemd160' }],
+        },
+      ],
+      asm:
+        '$pkh '
         // require(hash160(pk) == pkh)
-        'OP_OVER OP_HASH160 OP_EQUALVERIFY '
+        + 'OP_2 OP_PICK OP_HASH160 OP_EQUALVERIFY OP_SWAP '
         // require(checkSig(s, pk))
         + 'OP_CHECKSIG',
-      source: fs.readFileSync(path.join(__dirname, '..', 'valid-contract-files', 'p2pkh.cash'), { encoding: 'utf-8' }),
-      compiler: {
-        name: 'cashc',
-        version,
-      },
-      updatedAt: '',
     },
   },
   {
     fn: 'reassignment.cash',
     artifact: {
-      contractName: 'Reassignment',
-      constructorInputs: [{ name: 'x', type: 'int' }, { name: 'y', type: 'string' }],
-      abi: [{ name: 'hello', inputs: [{ name: 'pk', type: 'pubkey' }, { name: 's', type: 'sig' }] }],
-      bytecode:
+      version: 9,
+      compilerVersion: 'radc 0.1.0',
+      contract: 'Reassignment',
+      abi: [
+        {
+          type: 'function', index: 0, name: 'hello', params: [{ name: 'pk', type: 'PubKey' }, { name: 's', type: 'Sig' }],
+        },
+        { type: 'constructor', params: [{ name: 'x', type: 'int' }, { name: 'y', type: 'string' }] },
+      ],
+      asm:
+        '$y $x '
         // int myVariable = 10 - 4
-        'OP_10 OP_4 OP_SUB '
+        + 'OP_10 OP_4 OP_SUB '
         // int myOtherVariable = 20 + myVariable % 2
         + '14 OP_SWAP OP_2 OP_MOD OP_ADD '
         // require(myOtherVariable > x)
@@ -46,66 +53,70 @@ export const fixtures: Fixture[] = [
         // hw = hw + y
         + 'OP_DUP OP_ROT OP_CAT '
         // require(ripemd160(pk) == ripemd160(hw))
-        + 'OP_2 OP_PICK OP_RIPEMD160 OP_SWAP OP_RIPEMD160 OP_EQUALVERIFY '
+        + 'OP_3 OP_PICK OP_RIPEMD160 OP_SWAP OP_RIPEMD160 OP_EQUALVERIFY '
         // require(checkSig(s, pk))
-        + 'OP_ROT OP_ROT OP_CHECKSIG '
+        + 'OP_SWAP OP_ROT OP_CHECKSIG '
         + 'OP_NIP',
-      source: fs.readFileSync(path.join(__dirname, '..', 'valid-contract-files', 'reassignment.cash'), { encoding: 'utf-8' }),
-      compiler: {
-        name: 'cashc',
-        version,
-      },
-      updatedAt: '',
     },
   },
   {
     fn: 'if_statement.cash',
     artifact: {
-      contractName: 'IfStatement',
-      constructorInputs: [{ name: 'x', type: 'int' }, { name: 'y', type: 'int' }],
-      abi: [{ name: 'hello', inputs: [{ name: 'a', type: 'int' }, { name: 'b', type: 'int' }] }],
-      bytecode:
+      version: 9,
+      compilerVersion: 'radc 0.1.0',
+      contract: 'IfStatement',
+      abi: [
+        {
+          type: 'function', index: 0, name: 'hello', params: [{ name: 'a', type: 'int' }, { name: 'b', type: 'int' }],
+        },
+        {
+          type: 'constructor', params: [{ name: 'x', type: 'int' }, { name: 'y', type: 'int' }],
+        },
+      ],
+      asm:
+        '$y $x '
         // int d = a + b
-        'OP_2OVER OP_ADD '
+        + 'OP_2OVER OP_ADD '
         // d = d - a
-        + 'OP_DUP OP_4 OP_PICK OP_SUB '
+        + 'OP_DUP OP_5 OP_PICK OP_SUB '
         // if (d == x - 2) {
         + 'OP_DUP OP_3 OP_ROLL OP_2 OP_SUB OP_NUMEQUAL OP_IF '
         // int c = d + b
-        + 'OP_DUP OP_5 OP_PICK OP_ADD '
+        + 'OP_DUP OP_4 OP_PICK OP_ADD '
         // d = a + c
-        + 'OP_4 OP_PICK OP_OVER OP_ADD OP_ROT OP_DROP OP_SWAP '
+        + 'OP_5 OP_PICK OP_OVER OP_ADD OP_ROT OP_DROP OP_SWAP '
         // require(c > d)
         + 'OP_2DUP OP_LESSTHAN OP_VERIFY '
         // } else {
         + 'OP_DROP OP_ELSE '
         // require(d == a) }
-        + 'OP_DUP OP_4 OP_PICK OP_NUMEQUALVERIFY OP_ENDIF '
+        + 'OP_DUP OP_5 OP_PICK OP_NUMEQUALVERIFY OP_ENDIF '
         // d = d + a
-        + 'OP_DUP OP_4 OP_ROLL OP_ADD '
+        + 'OP_DUP OP_5 OP_ROLL OP_ADD '
         // require(d == y)
         + 'OP_3 OP_ROLL OP_NUMEQUAL '
         + 'OP_NIP OP_NIP OP_NIP',
-      source: fs.readFileSync(path.join(__dirname, '..', 'valid-contract-files', 'if_statement.cash'), { encoding: 'utf-8' }),
-      compiler: {
-        name: 'cashc',
-        version,
-      },
-      updatedAt: '',
     },
   },
   {
     fn: 'multifunction.cash',
     artifact: {
-      contractName: 'MultiFunction',
-      constructorInputs: [{ name: 'sender', type: 'pubkey' }, { name: 'recipient', type: 'pubkey' }, { name: 'timeout', type: 'int' }],
+      version: 9,
+      compilerVersion: 'radc 0.1.0',
+      contract: 'MultiFunction',
       abi: [
-        { name: 'transfer', inputs: [{ name: 'recipientSig', type: 'sig' }] },
-        { name: 'timeout', inputs: [{ name: 'senderSig', type: 'sig' }] },
+        {
+          type: 'function', index: 0, name: 'transfer', params: [{ name: 'recipientSig', type: 'Sig' }],
+        },
+        {
+          type: 'function', index: 1, name: 'timeout', params: [{ name: 'senderSig', type: 'Sig' }],
+        },
+        { type: 'constructor', params: [{ name: 'sender', type: 'PubKey' }, { name: 'recipient', type: 'PubKey' }, { name: 'timeout', type: 'int' }] },
       ],
-      bytecode:
+      asm:
+        '$timeout $recipient $sender '
         // function transfer
-        'OP_3 OP_PICK OP_0 OP_NUMEQUAL OP_IF '
+        + 'OP_3 OP_PICK OP_0 OP_NUMEQUAL OP_IF '
         // require(checkSig(recipientSig, recipient))
         + 'OP_4 OP_ROLL OP_ROT OP_CHECKSIG '
         + 'OP_NIP OP_NIP OP_NIP OP_ELSE '
@@ -116,44 +127,45 @@ export const fixtures: Fixture[] = [
         // require(tx.time >= timeout)
         + 'OP_SWAP OP_CHECKLOCKTIMEVERIFY OP_2DROP OP_1 '
         + 'OP_ENDIF',
-      source: fs.readFileSync(path.join(__dirname, '..', 'valid-contract-files', 'multifunction.cash'), { encoding: 'utf-8' }),
-      compiler: {
-        name: 'cashc',
-        version,
-      },
-      updatedAt: '',
     },
   },
   {
     fn: 'multifunction_if_statements.cash',
     artifact: {
-      contractName: 'MultiFunctionIfStatements',
-      constructorInputs: [{ name: 'x', type: 'int' }, { name: 'y', type: 'int' }],
+      version: 9,
+      compilerVersion: 'radc 0.1.0',
+      contract: 'MultiFunctionIfStatements',
       abi: [
-        { name: 'transfer', inputs: [{ name: 'a', type: 'int' }, { name: 'b', type: 'int' }] },
-        { name: 'timeout', inputs: [{ name: 'b', type: 'int' }] },
+        {
+          type: 'function', index: 0, name: 'transfer', params: [{ name: 'a', type: 'int' }, { name: 'b', type: 'int' }],
+        },
+        {
+          type: 'function', index: 1, name: 'timeout', params: [{ name: 'b', type: 'int' }],
+        },
+        { type: 'constructor', params: [{ name: 'x', type: 'int' }, { name: 'y', type: 'int' }] },
       ],
-      bytecode:
+      asm:
+        '$y $x '
         // function transfer
-        'OP_2 OP_PICK OP_0 OP_NUMEQUAL OP_IF '
+        + 'OP_2 OP_PICK OP_0 OP_NUMEQUAL OP_IF '
         // int d = a + b
-        + 'OP_3 OP_PICK OP_5 OP_PICK OP_ADD '
+        + 'OP_4 OP_PICK OP_4 OP_PICK OP_ADD '
         // d = d - a
-        + 'OP_DUP OP_5 OP_PICK OP_SUB '
+        + 'OP_DUP OP_6 OP_PICK OP_SUB '
         // if (d == x) {
         + 'OP_DUP OP_3 OP_ROLL OP_NUMEQUAL OP_IF '
         // int c = d + b
-        + 'OP_DUP OP_6 OP_PICK OP_ADD '
+        + 'OP_DUP OP_5 OP_PICK OP_ADD '
         // d = a + c
-        + 'OP_5 OP_PICK OP_OVER OP_ADD OP_ROT OP_DROP OP_SWAP '
+        + 'OP_6 OP_PICK OP_OVER OP_ADD OP_ROT OP_DROP OP_SWAP '
         // require(c > d)
         + 'OP_2DUP OP_LESSTHAN OP_VERIFY '
         // } else {
         + 'OP_DROP OP_ELSE '
         // d = a }
-        + 'OP_4 OP_PICK OP_NIP OP_ENDIF '
+        + 'OP_5 OP_PICK OP_NIP OP_ENDIF '
         // d = d + a
-        + 'OP_DUP OP_5 OP_ROLL OP_ADD '
+        + 'OP_DUP OP_6 OP_ROLL OP_ADD '
         // require(d == y)
         + 'OP_3 OP_ROLL OP_NUMEQUALVERIFY '
         + 'OP_2DROP OP_2DROP OP_1 OP_ELSE '
@@ -177,94 +189,97 @@ export const fixtures: Fixture[] = [
         // require(d == y)
         + 'OP_2SWAP OP_NUMEQUAL '
         + 'OP_NIP OP_NIP OP_ENDIF',
-      source: fs.readFileSync(path.join(__dirname, '..', 'valid-contract-files', 'multifunction_if_statements.cash'), { encoding: 'utf-8' }),
-      compiler: {
-        name: 'cashc',
-        version,
-      },
-      updatedAt: '',
     },
   },
   {
     fn: '2_of_3_multisig.cash',
     artifact: {
-      contractName: 'MultiSig',
-      constructorInputs: [{ name: 'pk1', type: 'pubkey' }, { name: 'pk2', type: 'pubkey' }, { name: 'pk3', type: 'pubkey' }],
-      abi: [{ name: 'spend', inputs: [{ name: 's1', type: 'sig' }, { name: 's2', type: 'sig' }] }],
-      bytecode:
+      version: 9,
+      compilerVersion: 'radc 0.1.0',
+      contract: 'MultiSig',
+      abi: [
+        {
+          type: 'function', index: 0, name: 'spend', params: [{ name: 's1', type: 'Sig' }, { name: 's2', type: 'Sig' }],
+        },
+        { type: 'constructor', params: [{ name: 'pk1', type: 'PubKey' }, { name: 'pk2', type: 'PubKey' }, { name: 'pk3', type: 'PubKey' }] },
+      ],
+      asm:
         // require(checkMultiSig([s1, s2], [pk1, pk2, pk3]))
-        'OP_0 OP_2ROT OP_SWAP OP_2 OP_2ROT OP_SWAP OP_6 OP_ROLL OP_3 OP_CHECKMULTISIG',
-      source: fs.readFileSync(path.join(__dirname, '..', 'valid-contract-files', '2_of_3_multisig.cash'), { encoding: 'utf-8' }),
-      compiler: {
-        name: 'cashc',
-        version,
-      },
-      updatedAt: '',
+        '$pk3 $pk2 $pk1 OP_0 OP_2ROT OP_2 OP_2ROT OP_SWAP OP_6 OP_ROLL OP_3 OP_CHECKMULTISIG',
     },
   },
   {
     fn: 'split_size.cash',
     artifact: {
-      contractName: 'SplitSize',
-      constructorInputs: [{ name: 'b', type: 'bytes' }],
-      abi: [{ name: 'spend', inputs: [] }],
-      bytecode:
+      version: 9,
+      compilerVersion: 'radc 0.1.0',
+      contract: 'SplitSize',
+      abi: [
+        {
+          type: 'function', index: 0, name: 'spend', params: [],
+        },
+        { type: 'constructor', params: [{ name: 'b', type: 'bytes' }] },
+      ],
+      asm:
+        '$b '
         // bytes x = b.split(b.length / 2)[1]
-        'OP_DUP OP_DUP OP_SIZE OP_NIP OP_2 OP_DIV OP_SPLIT OP_NIP '
+        + 'OP_DUP OP_DUP OP_SIZE OP_NIP OP_2 OP_DIV OP_SPLIT OP_NIP '
         // require(x != b)
         + 'OP_2DUP OP_EQUAL OP_NOT OP_VERIFY '
         // bytes x = b.split(b.length / 2)[1]
         + 'OP_SWAP OP_4 OP_SPLIT OP_DROP OP_EQUAL OP_NOT',
-      source: fs.readFileSync(path.join(__dirname, '..', 'valid-contract-files', 'split_size.cash'), { encoding: 'utf-8' }),
-      compiler: {
-        name: 'cashc',
-        version,
-      },
-      updatedAt: '',
     },
   },
   {
     fn: 'cast_hash_checksig.cash',
     artifact: {
-      contractName: 'CastHashChecksig',
-      constructorInputs: [],
-      abi: [{ name: 'hello', inputs: [{ name: 'pk', type: 'pubkey' }, { name: 's', type: 'sig' }] }],
-      bytecode:
+      version: 9,
+      compilerVersion: 'radc 0.1.0',
+      contract: 'CastHashChecksig',
+      abi: [
+        {
+          type: 'function', index: 0, name: 'hello', params: [{ name: 'pk', type: 'PubKey' }, { name: 's', type: 'Sig' }],
+        },
+        { type: 'constructor', params: [] },
+      ],
+      asm:
         // require((ripemd160(bytes(pk)) == hash160(0x0) == !true));
-        'OP_DUP OP_RIPEMD160 OP_0 OP_HASH160 OP_EQUAL OP_1 OP_NOT OP_EQUALVERIFY '
+        'OP_OVER OP_RIPEMD160 OP_0 OP_HASH160 OP_EQUAL OP_1 OP_NOT OP_EQUALVERIFY OP_SWAP '
         // require(checkSig(s, pk));
         + 'OP_CHECKSIG',
-      source: fs.readFileSync(path.join(__dirname, '..', 'valid-contract-files', 'cast_hash_checksig.cash'), { encoding: 'utf-8' }),
-      compiler: {
-        name: 'cashc',
-        version,
-      },
-      updatedAt: '',
     },
   },
   {
     fn: 'hodl_vault.cash',
     artifact: {
-      contractName: 'HodlVault',
-      constructorInputs: [
-        { name: 'ownerPk', type: 'pubkey' },
-        { name: 'oraclePk', type: 'pubkey' },
-        { name: 'minBlock', type: 'int' },
-        { name: 'priceTarget', type: 'int' },
-      ],
+      version: 9,
+      compilerVersion: 'radc 0.1.0',
+      contract: 'HodlVault',
       abi: [
         {
+          type: 'function',
+          index: 0,
           name: 'spend',
-          inputs: [
-            { name: 'ownerSig', type: 'sig' },
+          params: [
+            { name: 'ownerSig', type: 'Sig' },
             { name: 'oracleSig', type: 'datasig' },
-            { name: 'oracleMessage', type: 'bytes8' },
+            { name: 'oracleMessage', type: 'bytes' },
+          ],
+        },
+        {
+          type: 'constructor',
+          params: [
+            { name: 'ownerPk', type: 'PubKey' },
+            { name: 'oraclePk', type: 'PubKey' },
+            { name: 'minBlock', type: 'int' },
+            { name: 'priceTarget', type: 'int' },
           ],
         },
       ],
-      bytecode:
+      asm:
+        '$priceTarget $minBlock $oraclePk $ownerPk '
         // bytes4 blockHeightBin, bytes4 priceBin = oracleMessage.split(4);
-        'OP_6 OP_PICK OP_4 OP_SPLIT '
+        + 'OP_4 OP_PICK OP_4 OP_SPLIT '
         // int blockHeight = int(blockHeightBin);
         + 'OP_SWAP OP_BIN2NUM '
         // int price = int(priceBin);
@@ -276,24 +291,26 @@ export const fixtures: Fixture[] = [
         // require(price >= priceTarget);
         + 'OP_3 OP_ROLL OP_GREATERTHANOREQUAL OP_VERIFY '
         // require(checkDataSig(oracleSig, oracleMessage, oraclePk));
-        + 'OP_3 OP_ROLL OP_4 OP_ROLL OP_3 OP_ROLL OP_CHECKDATASIGVERIFY '
+        + 'OP_2SWAP OP_3 OP_ROLL OP_CHECKDATASIGVERIFY '
         // require(checkSig(ownerSig, ownerPk));
         + 'OP_CHECKSIG',
-      source: fs.readFileSync(path.join(__dirname, '..', 'valid-contract-files', 'hodl_vault.cash'), { encoding: 'utf-8' }),
-      compiler: {
-        name: 'cashc',
-        version,
-      },
-      updatedAt: '',
     },
   },
   {
     fn: 'deep_replace.cash',
     artifact: {
-      contractName: 'DeepReplace',
-      constructorInputs: [],
-      abi: [{ name: 'hello', inputs: [] }],
-      bytecode:
+      version: 9,
+      compilerVersion: 'radc 0.1.0',
+      contract: 'DeepReplace',
+      abi: [
+        {
+          type: 'function', index: 0, name: 'hello', params: [],
+        },
+        {
+          type: 'constructor', params: [],
+        },
+      ],
+      asm:
         // int a = 1; int b = 2; int c = 3; int d = 4; int e = 5; int f = 6;
         'OP_1 OP_2 OP_3 OP_4 OP_5 OP_6 '
         // if (a < 3) {
@@ -305,60 +322,68 @@ export const fixtures: Fixture[] = [
         // require(a > b + c + d + e + f);
         + 'OP_2ROT OP_5 OP_ROLL OP_ADD OP_4 OP_ROLL OP_ADD '
         + 'OP_3 OP_ROLL OP_ADD OP_ROT OP_ADD OP_GREATERTHAN',
-      source: fs.readFileSync(path.join(__dirname, '..', 'valid-contract-files', 'deep_replace.cash'), { encoding: 'utf-8' }),
-      compiler: {
-        name: 'cashc',
-        version,
-      },
-      updatedAt: '',
     },
   },
   {
     fn: 'bounded_bytes.cash',
     artifact: {
-      contractName: 'BoundedBytes',
-      constructorInputs: [],
-      abi: [{ name: 'spend', inputs: [{ name: 'b', type: 'bytes4' }, { name: 'i', type: 'int' }] }],
-      bytecode: 'OP_SWAP OP_4 OP_NUM2BIN OP_EQUAL', // require(b == bytes4(i))
-      source: fs.readFileSync(path.join(__dirname, '..', 'valid-contract-files', 'bounded_bytes.cash'), { encoding: 'utf-8' }),
-      compiler: {
-        name: 'cashc',
-        version,
-      },
-      updatedAt: '',
+      version: 9,
+      compilerVersion: 'radc 0.1.0',
+      contract: 'BoundedBytes',
+      abi: [
+        {
+          type: 'function', index: 0, name: 'spend', params: [{ name: 'b', type: 'bytes' }, { name: 'i', type: 'int' }],
+        },
+        {
+          type: 'constructor', params: [],
+        },
+      ],
+      asm: 'OP_4 OP_NUM2BIN OP_EQUAL', // require(b == bytes4(i))
     },
   },
   {
     fn: 'covenant.cash',
     artifact: {
-      contractName: 'Covenant',
-      constructorInputs: [
+      version: 9,
+      compilerVersion: 'radc 0.1.0',
+      contract: 'Covenant',
+      abi: [
         {
-          name: 'requiredVersion',
-          type: 'int',
+          type: 'function', index: 0, name: 'spend', params: [],
+        },
+        {
+          type: 'constructor',
+          params: [
+            {
+              name: 'requiredVersion',
+              type: 'int',
+            },
+          ],
         },
       ],
-      abi: [{ name: 'spend', inputs: [] }],
-      bytecode:
+      asm:
+        '$requiredVersion '
         // require(tx.version == requiredVersion)
-        'OP_TXVERSION OP_NUMEQUALVERIFY '
+        + 'OP_TXVERSION OP_NUMEQUALVERIFY '
         // require(tx.bytecode == 0x00)
         + 'OP_ACTIVEBYTECODE 00 OP_EQUAL',
-      source: fs.readFileSync(path.join(__dirname, '..', 'valid-contract-files', 'covenant.cash'), { encoding: 'utf-8' }),
-      compiler: {
-        name: 'cashc',
-        version,
-      },
-      updatedAt: '',
     },
   },
   {
     fn: 'covenant_all_fields.cash',
     artifact: {
-      contractName: 'Covenant',
-      constructorInputs: [],
-      abi: [{ name: 'spend', inputs: [] }],
-      bytecode:
+      version: 9,
+      compilerVersion: 'radc 0.1.0',
+      contract: 'Covenant',
+      abi: [
+        {
+          type: 'function', index: 0, name: 'spend', params: [],
+        },
+        {
+          type: 'constructor', params: [],
+        },
+      ],
+      asm:
         // require(tx.version == 2)
         'OP_TXVERSION OP_2 OP_NUMEQUALVERIFY '
         // require(tx.locktime == 0)
@@ -387,31 +412,35 @@ export const fixtures: Fixture[] = [
         + 'OP_0 OP_OUTPUTVALUE 1027 OP_NUMEQUALVERIFY '
         // require(tx.outputs[0].lockingBytecode.length == 100)
         + 'OP_0 OP_OUTPUTBYTECODE OP_SIZE OP_NIP 64 OP_NUMEQUAL',
-      source: fs.readFileSync(path.join(__dirname, '..', 'valid-contract-files', 'covenant_all_fields.cash'), { encoding: 'utf-8' }),
-      compiler: {
-        name: 'cashc',
-        version,
-      },
-      updatedAt: '',
     },
   },
   {
     fn: 'mecenas.cash',
     artifact: {
-      contractName: 'Mecenas',
-      constructorInputs: [
-        { name: 'recipient', type: 'bytes20' },
-        { name: 'funder', type: 'bytes20' },
-        { name: 'pledge', type: 'int' },
-        { name: 'period', type: 'int' },
-      ],
+      version: 9,
+      compilerVersion: 'radc 0.1.0',
+      contract: 'Mecenas',
       abi: [
-        { name: 'receive', inputs: [] },
-        { name: 'reclaim', inputs: [{ name: 'pk', type: 'pubkey' }, { name: 's', type: 'sig' }] },
+        {
+          type: 'function', index: 0, name: 'receive', params: [],
+        },
+        {
+          type: 'function', index: 1, name: 'reclaim', params: [{ name: 'pk', type: 'PubKey' }, { name: 's', type: 'Sig' }],
+        },
+        {
+          type: 'constructor',
+          params: [
+            { name: 'recipient', type: 'Ripemd160' },
+            { name: 'funder', type: 'Ripemd160' },
+            { name: 'pledge', type: 'int' },
+            { name: 'period', type: 'int' },
+          ],
+        },
       ],
-      bytecode:
+      asm:
+        '$period $pledge $funder $recipient '
         // function receive
-        'OP_4 OP_PICK OP_0 OP_NUMEQUAL OP_IF '
+        + 'OP_4 OP_PICK OP_0 OP_NUMEQUAL OP_IF '
         // require(tx.age >= period)
         + 'OP_3 OP_ROLL OP_CHECKSEQUENCEVERIFY OP_DROP '
         // require(tx.outputs[0].lockingBytecode == new LockingBytecodeP2PKH(recipient))
@@ -441,26 +470,28 @@ export const fixtures: Fixture[] = [
         // function reclaim
         + 'OP_4 OP_ROLL OP_1 OP_NUMEQUALVERIFY '
         // require(hash160(pk) == funder)
-        + 'OP_4 OP_PICK OP_HASH160 OP_ROT OP_EQUALVERIFY '
+        + 'OP_5 OP_PICK OP_HASH160 OP_ROT OP_EQUALVERIFY '
         // require(checkSig(s, pk))
-        + 'OP_4 OP_ROLL OP_4 OP_ROLL OP_CHECKSIG '
+        + 'OP_3 OP_ROLL OP_4 OP_ROLL OP_CHECKSIG '
         // Cleanup
         + 'OP_NIP OP_NIP OP_NIP OP_ENDIF',
-      source: fs.readFileSync(path.join(__dirname, '..', 'valid-contract-files', 'mecenas.cash'), { encoding: 'utf-8' }),
-      compiler: {
-        name: 'cashc',
-        version,
-      },
-      updatedAt: '',
     },
   },
   {
     fn: 'announcement.cash',
     artifact: {
-      contractName: 'Announcement',
-      constructorInputs: [],
-      abi: [{ name: 'announce', inputs: [] }],
-      bytecode:
+      version: 9,
+      compilerVersion: 'radc 0.1.0',
+      contract: 'Announcement',
+      abi: [
+        {
+          type: 'function', index: 0, name: 'announce', params: [],
+        },
+        {
+          type: 'constructor', params: [],
+        },
+      ],
+      asm:
         // bytes announcement = new LockingBytecodeNullData(...)
         '6a 6d02 OP_SIZE OP_SWAP OP_CAT OP_CAT '
         + '4120636f6e7472616374206d6179206e6f7420696e6a75726520612068756d616e20626'
@@ -485,46 +516,273 @@ export const fixtures: Fixture[] = [
         + 'OP_1 OP_OUTPUTVALUE OP_OVER OP_NUMEQUALVERIFY OP_ENDIF '
         // Stack clean-up
         + 'OP_DROP OP_1',
-      source: fs.readFileSync(path.join(__dirname, '..', 'valid-contract-files', 'announcement.cash'), { encoding: 'utf-8' }),
-      compiler: {
-        name: 'cashc',
-        version,
-      },
-      updatedAt: '',
     },
   },
   {
     fn: 'p2palindrome.cash',
     artifact: {
-      contractName: 'P2Palindrome',
-      constructorInputs: [],
+      version: 9,
+      compilerVersion: 'radc 0.1.0',
+      contract: 'P2Palindrome',
       abi: [
-        { name: 'spend', inputs: [{ name: 'palindrome', type: 'string' }] },
+        {
+          type: 'function', index: 0, name: 'spend', params: [{ name: 'palindrome', type: 'string' }],
+        },
+        {
+          type: 'constructor', params: [],
+        },
       ],
-      bytecode: 'OP_DUP OP_REVERSEBYTES OP_EQUAL',
-      source: fs.readFileSync(path.join(__dirname, '..', 'valid-contract-files', 'p2palindrome.cash'), { encoding: 'utf-8' }),
-      compiler: {
-        name: 'cashc',
-        version,
-      },
-      updatedAt: '',
+      asm: 'OP_DUP OP_REVERSEBYTES OP_EQUAL',
     },
   },
   {
     fn: 'num2bin_variable.cash',
     artifact: {
-      contractName: 'Num2Bin',
-      constructorInputs: [],
+      version: 9,
+      compilerVersion: 'radc 0.1.0',
+      contract: 'Num2Bin',
       abi: [
-        { name: 'spend', inputs: [{ name: 'size', type: 'int' }] },
+        {
+          type: 'function', index: 0, name: 'spend', params: [{ name: 'size', type: 'int' }],
+        },
+        {
+          type: 'constructor', params: [],
+        },
       ],
-      bytecode: 'OP_10 OP_SWAP OP_NUM2BIN OP_BIN2NUM OP_10 OP_NUMEQUAL',
-      source: fs.readFileSync(path.join(__dirname, '..', 'valid-contract-files', 'num2bin_variable.cash'), { encoding: 'utf-8' }),
-      compiler: {
-        name: 'cashc',
-        version,
-      },
-      updatedAt: '',
+      asm: 'OP_10 OP_SWAP OP_NUM2BIN OP_BIN2NUM OP_10 OP_NUMEQUAL',
+    },
+  },
+  {
+    fn: 'radiant.rad',
+    artifact: {
+      version: 9,
+      compilerVersion: 'radc 0.1.0',
+      contract: 'Radiant',
+      abi: [
+        {
+          type: 'function', index: 0, name: 'spend', params: [],
+        },
+        {
+          type: 'constructor',
+          params: [
+            {
+              name: 'ref',
+              type: 'bytes',
+            },
+          ],
+        },
+      ],
+      asm:
+        // stateSeparator
+        'OP_1 OP_VERIFY OP_STATESEPARATOR '
+
+        // Push ref expressions
+        + 'OP_PUSHINPUTREF aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa00000000 00 OP_EQUAL OP_NOT OP_VERIFY '
+        + 'OP_REQUIREINPUTREF bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb00000000 00 OP_EQUAL OP_NOT OP_VERIFY '
+        + 'OP_DISALLOWPUSHINPUTREF cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc00000000 00 OP_EQUAL OP_NOT OP_VERIFY '
+        + 'OP_DISALLOWPUSHINPUTREFSIBLING dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd00000000 00 OP_EQUAL OP_NOT OP_VERIFY '
+        + 'OP_PUSHINPUTREFSINGLETON eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee00000000 00 OP_EQUAL OP_NOT OP_VERIFY '
+
+        // Push ref statements
+        + 'OP_PUSHINPUTREF aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa00000000 OP_DROP '
+        + 'OP_REQUIREINPUTREF bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb00000000 OP_DROP '
+        + 'OP_DISALLOWPUSHINPUTREF cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc00000000 OP_DROP '
+        + 'OP_DISALLOWPUSHINPUTREFSIBLING dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd00000000 OP_DROP '
+        + 'OP_PUSHINPUTREFSINGLETON eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee00000000 OP_DROP '
+
+        // tx.inputs[1].refHashDataSummary
+        + 'OP_1 OP_REFHASHDATASUMMARY_UTXO ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff OP_EQUALVERIFY '
+
+        // tx.inputs.refHashValueSum
+        + 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa OP_REFHASHVALUESUM_UTXOS OP_1 OP_NUMEQUALVERIFY '
+
+        // tx.outputs[1].refHashDataSummary
+        + 'OP_1 OP_REFHASHDATASUMMARY_OUTPUT bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb OP_EQUALVERIFY '
+
+        // tx.outputs.refHashValueSum
+        + 'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc OP_REFHASHVALUESUM_OUTPUTS OP_1 OP_NUMEQUALVERIFY '
+
+        // tx.inputs.refType(0x);
+        + 'dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd00000000 OP_REFTYPE_UTXO OP_1 OP_NUMEQUALVERIFY '
+
+        // tx.outputs.refType
+        + 'eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee00000000 OP_REFTYPE_OUTPUT OP_1 OP_NUMEQUALVERIFY '
+
+        // tx.inputs.refValueSum
+        + 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00000000 OP_REFVALUESUM_UTXOS OP_1 OP_NUMEQUALVERIFY '
+
+        // tx.outputs.refValueSum
+        + 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa00000000 OP_REFVALUESUM_OUTPUTS OP_1 OP_NUMEQUALVERIFY '
+
+        // tx.inputs.refOutputCount
+        + 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb00000000 OP_REFOUTPUTCOUNT_UTXOS OP_1 OP_NUMEQUALVERIFY '
+
+        // tx.outputs.refOutputCount
+        + 'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc00000000 OP_REFOUTPUTCOUNT_OUTPUTS OP_1 OP_NUMEQUALVERIFY '
+
+        // tx.inputs.zeroValue.refOutputCount
+        + 'dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd00000000 OP_REFOUTPUTCOUNTZEROVALUED_UTXOS OP_1 OP_NUMEQUALVERIFY '
+
+        // tx.outputs.zeroValue.refOutputCount
+        + 'eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee00000000 OP_REFOUTPUTCOUNTZEROVALUED_OUTPUTS OP_1 OP_NUMEQUALVERIFY '
+
+        // tx.inputs[1].refDataSummary
+        + 'OP_1 OP_REFDATASUMMARY_UTXO 00 OP_EQUALVERIFY '
+
+        // tx.outputs[1].refDataSummary
+        + 'OP_1 OP_REFDATASUMMARY_OUTPUT 00 OP_EQUALVERIFY '
+
+        // tx.outputs.codeScriptValueSum
+        + 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff OP_CODESCRIPTHASHVALUESUM_UTXOS OP_1 OP_NUMEQUALVERIFY '
+
+        // tx.outputs.codeScriptValueSum
+        + 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa OP_CODESCRIPTHASHVALUESUM_OUTPUTS OP_1 OP_NUMEQUALVERIFY '
+
+        // tx.inputs.codeScriptOutputCount
+        + 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb OP_CODESCRIPTHASHOUTPUTCOUNT_UTXOS OP_1 OP_NUMEQUALVERIFY '
+
+        // tx.outputs.codeScriptOutputCount
+        + 'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc OP_CODESCRIPTHASHOUTPUTCOUNT_OUTPUTS OP_1 OP_NUMEQUALVERIFY '
+
+        // tx.inputs.zeroValue.codeScriptCount
+        + 'dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd OP_CODESCRIPTHASHZEROVALUEDOUTPUTCOUNT_UTXOS OP_1 OP_NUMEQUALVERIFY '
+
+        // tx.outputs.zeroValue.codeScriptCount
+        + 'eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee OP_CODESCRIPTHASHZEROVALUEDOUTPUTCOUNT_OUTPUTS OP_1 OP_NUMEQUALVERIFY '
+
+        // tx.inputs[1].codeScript
+        + 'OP_1 OP_CODESCRIPTBYTECODE_UTXO 00 OP_EQUALVERIFY '
+
+        // tx.outputs[1].codeScript
+        + 'OP_1 OP_CODESCRIPTBYTECODE_OUTPUT 00 OP_EQUALVERIFY '
+
+        // tx.inputs[1].stateScript
+        + 'OP_1 OP_STATESCRIPTBYTECODE_UTXO 00 OP_EQUALVERIFY '
+
+        // tx.outputs[1].stateScript
+        + 'OP_1 OP_STATESCRIPTBYTECODE_OUTPUT 00 OP_EQUALVERIFY '
+
+        // tx.inputs[1].stateSeparatorIndex
+        + 'OP_1 OP_STATESEPARATORINDEX_UTXO OP_1 OP_NUMEQUALVERIFY '
+
+        // tx.outputs[1].stateSeparatorIndex
+        + 'OP_1 OP_STATESEPARATORINDEX_OUTPUT OP_1 OP_NUMEQUALVERIFY '
+
+        // sha512_256
+        + 'ff OP_SHA512_256 00 OP_EQUALVERIFY '
+
+        // hash512_256
+        + 'ff OP_HASH512_256 00 OP_EQUALVERIFY '
+
+        // Push ref with identifier
+        + 'OP_PUSHINPUTREF OP_UNKNOWN255 726566 OP_DROP '
+
+        + 'OP_1',
+    },
+  },
+  {
+    fn: 'state_script_function.rad',
+    artifact: {
+      version: 9,
+      compilerVersion: 'radc 0.1.0',
+      contract: 'StateScriptFunction',
+      abi: [
+        {
+          type: 'function',
+          index: 0,
+          name: 'function1',
+          params: [
+            {
+              name: 'functionVar',
+              type: 'int',
+            },
+            {
+              name: 'stateOnlyVar',
+              type: 'int',
+            },
+            {
+              name: 'stateVar',
+              type: 'int',
+            },
+            {
+              name: 'stateVarInIf',
+              type: 'int',
+            },
+          ],
+        },
+        {
+          type: 'function',
+          index: 1,
+          name: 'function2',
+          params: [
+            {
+              name: 'functionVar',
+              type: 'int',
+            },
+            {
+              name: 'stateOnlyVar',
+              type: 'int',
+            },
+            {
+              name: 'stateVar',
+              type: 'int',
+            },
+            {
+              name: 'stateVarInIf',
+              type: 'int',
+            },
+          ],
+        },
+        {
+          type: 'constructor',
+          params: [
+            {
+              name: 'ref',
+              type: 'bytes',
+            },
+          ],
+        },
+      ],
+      asm: 'OP_PUSHINPUTREF OP_UNKNOWN255 726566 OP_DROP OP_ROT OP_1ADD OP_1 OP_IF OP_OVER OP_1ADD OP_ROT OP_DROP OP_SWAP OP_ENDIF OP_2 OP_PICK OP_1 OP_NUMEQUALVERIFY OP_2DROP OP_STATESEPARATOR OP_OVER OP_0 OP_NUMEQUAL OP_IF OP_ROT OP_ADD OP_3 OP_NUMEQUAL OP_NIP OP_ELSE OP_SWAP OP_1 OP_NUMEQUALVERIFY OP_ADD OP_4 OP_NUMEQUAL OP_ENDIF',
+    },
+  },
+  {
+    fn: 'rxd_fungible_token.rad',
+    artifact: {
+      version: 9,
+      compilerVersion: 'radc 0.1.0',
+      contract: 'FungibleToken',
+      abi: [
+        {
+          type: 'function',
+          index: 0,
+          name: 'spend',
+          params: [
+            {
+              name: 's',
+              type: 'Sig',
+            },
+            {
+              name: 'pk',
+              type: 'PubKey',
+            },
+          ],
+        },
+        {
+          type: 'constructor',
+          params: [
+            {
+              name: 'ref',
+              type: 'bytes',
+            },
+            {
+              name: 'pkh',
+              type: 'Ripemd160',
+            },
+          ],
+        },
+      ],
+      asm: 'OP_DUP OP_HASH160 OP_UNKNOWN255 706b68 OP_EQUALVERIFY OP_CHECKSIGVERIFY OP_STATESEPARATOR OP_PUSHINPUTREF OP_UNKNOWN255 726566 OP_INPUTINDEX OP_CODESCRIPTBYTECODE_UTXO OP_HASH256 OP_DUP OP_CODESCRIPTHASHOUTPUTCOUNT_OUTPUTS OP_ROT OP_REFOUTPUTCOUNT_OUTPUTS OP_NUMEQUALVERIFY OP_DUP OP_CODESCRIPTHASHVALUESUM_UTXOS OP_SWAP OP_CODESCRIPTHASHVALUESUM_OUTPUTS OP_NUMEQUAL',
     },
   },
 ];

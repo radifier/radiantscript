@@ -24,6 +24,10 @@ import {
   InstantiationNode,
   TupleAssignmentNode,
   NullaryOpNode,
+  PushDataNode,
+  PushRefNode,
+  StateScriptNode,
+  UnsetNode,
 } from './AST.js';
 
 export default abstract class AstVisitor<T> {
@@ -51,6 +55,10 @@ export default abstract class AstVisitor<T> {
   abstract visitIntLiteral(node: IntLiteralNode): T;
   abstract visitStringLiteral(node: StringLiteralNode): T;
   abstract visitHexLiteral(node: HexLiteralNode): T;
+  abstract visitPushData(node: PushDataNode): T;
+  abstract visitPushRef(node: PushRefNode): T;
+  abstract visitStateScript(node: StateScriptNode): T;
+  abstract visitUnset(node: UnsetNode): T;
 
   visit(node: Node): T {
     return node.accept(this);

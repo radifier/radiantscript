@@ -9,7 +9,7 @@ pragmaDirective
     ;
 
 pragmaName
-    : 'cashscript'
+    : 'radiantscript'
     ;
 
 pragmaValue
@@ -25,7 +25,7 @@ versionOperator
     ;
 
 contractDefinition
-    : 'contract' Identifier parameterList '{' functionDefinition* '}'
+    : 'contract' Identifier parameterList parameterList? '{' stateScriptStatement? statement* functionDefinition* '}'
     ;
 
 functionDefinition
@@ -37,7 +37,7 @@ parameterList
     ;
 
 parameter
-    : typeName Identifier
+    : typeName modifier? Identifier
     ;
 
 block
@@ -52,6 +52,9 @@ statement
     | timeOpStatement
     | requireStatement
     | ifStatement
+    | pushDataStatement
+    | pushRefStatement
+    | unsetStatement
     ;
 
 variableDefinition
@@ -82,6 +85,26 @@ functionCall
     : Identifier expressionList // Only built-in functions are accepted
     ;
 
+stateScriptStatement
+    : 'state' stateScriptBlock=block
+    ;
+
+pushDataStatement
+    : 'pushData' '(' (HexLiteral | Identifier) ')' ';'
+    ;
+
+pushRefStatement
+    : pushRef ';'
+    ;
+
+pushRef
+    : op=('pushInputRef' | 'requireInputRef' | 'disallowPushInputRefSibling' | 'disallowPushInputRef' | 'pushInputRefSingleton') '(' (HexLiteral | Identifier) ')'
+    ;
+
+unsetStatement
+    : 'unset' '(' Identifier ')' ';'
+    ;
+
 expressionList
     : '(' (expression (',' expression)* ','?)? ')'
     ;
@@ -92,8 +115,13 @@ expression
     | functionCall # FunctionCallExpression
     | 'new' Identifier expressionList #Instantiation
     | expression '[' index=NumberLiteral ']' # TupleIndexOp
-    | scope='tx.outputs' '[' expression ']' op=('.value' | '.lockingBytecode') # UnaryIntrospectionOp
-    | scope='tx.inputs' '[' expression ']' op=('.value' | '.lockingBytecode' | '.outpointTransactionHash' | '.outpointIndex' | '.unlockingBytecode' | '.sequenceNumber') # UnaryIntrospectionOp
+    | scope='tx.outputs' '[' expression ']' '.' op=Identifier # UnaryIntrospectionOp
+    | scope='tx.inputs' '[' expression ']' '.' op=Identifier # UnaryIntrospectionOp
+    | scope='tx.outputs' '.' Identifier expressionList # IntrospectionFunctionCall
+    | scope='tx.inputs' '.' Identifier expressionList # IntrospectionFunctionCall
+    | scope='tx.outputs.zeroValue' '.' Identifier expressionList # IntrospectionFunctionCall
+    | scope='tx.inputs.zeroValue' '.' Identifier expressionList # IntrospectionFunctionCall
+    | pushRef # PushRefExpression
     | expression op=('.reverse()' | '.length') # UnaryOp
     | left=expression op='.split' '(' right=expression ')' # BinaryOp
     | op=('!' | '-') expression # UnaryOp
@@ -186,7 +214,7 @@ NullaryOp
     ;
 
 Identifier
-    : [a-zA-Z] [a-zA-Z0-9_]*
+    : '$'? [a-zA-Z] [a-zA-Z0-9_]*
     ;
 
 WHITESPACE

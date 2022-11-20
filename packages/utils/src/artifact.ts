@@ -6,22 +6,19 @@ export interface AbiInput {
 }
 
 export interface AbiFunction {
-  name: string;
-  covenant?: boolean;
-  inputs: AbiInput[];
+  type: 'function' | 'constructor';
+  name?: string;
+  index?: number;
+  params: AbiInput[];
 }
 
 export interface Artifact {
-  contractName: string;
-  constructorInputs: AbiInput[];
+  version: number;
+  compilerVersion: string;
+  contract: string;
   abi: AbiFunction[];
-  bytecode: string;
-  source: string;
-  compiler: {
-    name: string;
-    version: string;
-  }
-  updatedAt: string;
+  asm: string;
+  hex?: string;
 }
 
 export function importArtifact(artifactFile: string): Artifact {

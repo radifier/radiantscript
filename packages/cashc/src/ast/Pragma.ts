@@ -1,7 +1,7 @@
 import { VersionOperatorContext } from '../grammar/CashScriptParser.js';
 
 export enum PragmaName {
-  CASHSCRIPT = 'cashscript',
+  RADIANTSCRIPT = 'radiantscript',
 }
 
 export enum VersionOp {

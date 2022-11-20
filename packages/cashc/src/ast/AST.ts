@@ -1,5 +1,5 @@
 import { Type, PrimitiveType, BytesType } from '@cashscript/utils';
-import { TimeOp } from './Globals.js';
+import { PushRefOp, TimeOp } from './Globals.js';
 import AstVisitor from './AstVisitor.js';
 import { BinaryOperator, NullaryOperator, UnaryOperator } from './Operator.js';
 import { Location } from './Location.js';
@@ -34,11 +34,16 @@ export class SourceFileNode extends Node {
 
 export class ContractNode extends Node implements Named {
   symbolTable?: SymbolTable;
+  opRolls: Map<string, IdentifierNode> = new Map();
+  codeScriptIdentifiers: Set<Symbol> = new Set();
 
   constructor(
     public name: string,
     public parameters: ParameterNode[],
     public functions: FunctionDefinitionNode[],
+    public functionParameters: ParameterNode[] = [],
+    public stateScript?: StateScriptNode,
+    public statements: StatementNode[] = [],
   ) {
     super();
   }
@@ -66,9 +71,12 @@ export class FunctionDefinitionNode extends Node implements Named {
 }
 
 export class ParameterNode extends Node implements Named, Typed {
+  scope?: string;
+
   constructor(
     public type: Type,
     public name: string,
+    public modifier: string = '',
   ) {
     super();
   }
@@ -349,5 +357,55 @@ export class HexLiteralNode extends LiteralNode {
 
   accept<T>(visitor: AstVisitor<T>): T {
     return visitor.visitHexLiteral(this);
+  }
+}
+
+export class PushDataNode extends ExpressionNode {
+  constructor(
+    public data: HexLiteralNode | IdentifierNode,
+  ) {
+    super();
+  }
+
+  accept<T>(visitor: AstVisitor<T>): T {
+    return visitor.visitPushData(this);
+  }
+}
+
+export class PushRefNode extends ExpressionNode {
+  constructor(
+    public op: PushRefOp,
+    public ref: HexLiteralNode | IdentifierNode,
+    public drop: boolean,
+  ) {
+    super();
+  }
+
+  accept<T>(visitor: AstVisitor<T>): T {
+    return visitor.visitPushRef(this);
+  }
+}
+
+export class StateScriptNode extends StatementNode {
+  constructor(
+    public stateScriptBlock: BlockNode,
+  ) {
+    super();
+  }
+
+  accept<T>(visitor: AstVisitor<T>): T {
+    return visitor.visitStateScript(this);
+  }
+}
+
+export class UnsetNode extends Node {
+  constructor(
+    public identifier: IdentifierNode,
+  ) {
+    super();
+  }
+
+  accept<T>(visitor: AstVisitor<T>): T {
+    return visitor.visitUnset(this);
   }
 }

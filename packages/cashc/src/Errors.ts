@@ -19,6 +19,8 @@ import {
   StatementNode,
   ContractNode,
   ExpressionNode,
+  PushDataNode,
+  PushRefNode,
 } from './ast/AST.js';
 import { Symbol, SymbolType } from './ast/SymbolTable.js';
 import { Location, Point } from './ast/Location.js';
@@ -160,7 +162,7 @@ export class UnequalTypeError extends TypeError {
 
 export class UnsupportedTypeError extends TypeError {
   constructor(
-    node: BinaryOpNode | UnaryOpNode | TimeOpNode | TupleIndexOpNode,
+    node: BinaryOpNode | UnaryOpNode | TimeOpNode | TupleIndexOpNode | PushDataNode | PushRefNode,
     actual?: Type,
     expected?: Type,
   ) {
@@ -264,5 +266,13 @@ export class VersionError extends Error {
     super(message);
 
     this.name = this.constructor.name;
+  }
+}
+
+export class PushTypeError extends CashScriptError {
+  constructor(
+    node: Node,
+  ) {
+    super(node, 'Push parameter must be a hex literal or contract scoped constant bytes');
   }
 }

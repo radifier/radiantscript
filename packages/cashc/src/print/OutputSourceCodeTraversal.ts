@@ -26,6 +26,9 @@ import {
   InstantiationNode,
   TupleAssignmentNode,
   NullaryOpNode,
+  PushDataNode,
+  PushRefNode,
+  StateScriptNode,
 } from '../ast/AST.js';
 import AstTraversal from '../ast/AstTraversal.js';
 
@@ -58,11 +61,14 @@ export default class OutputSourceCodeTraversal extends AstTraversal {
   visitContract(node: ContractNode): Node {
     this.addOutput(`contract ${node.name}(`, true);
     node.parameters = this.visitCommaList(node.parameters) as ParameterNode[];
+    node.functionParameters = this.visitCommaList(node.functionParameters) as ParameterNode[];
     this.addOutput(') {');
     this.outputSymbolTable(node.symbolTable);
     this.addOutput('\n');
 
     this.indent();
+    node.stateScript = node.stateScript && this.visit(node.stateScript) as StateScriptNode;
+    node.statements = this.visitOptionalList(node.statements) as StatementNode[];
     node.functions = this.visitList(node.functions) as FunctionDefinitionNode[];
     this.unindent();
 
@@ -276,6 +282,31 @@ export default class OutputSourceCodeTraversal extends AstTraversal {
 
   visitHexLiteral(node: HexLiteralNode): Node {
     this.addOutput(`0x${binToHex(node.value)}`);
+    return node;
+  }
+
+  visitPushData(node: PushDataNode): Node {
+    this.addOutput('pushData(');
+    this.visit(node.data);
+    this.addOutput(')');
+    return node;
+  }
+
+  visitPushRef(node: PushRefNode): Node {
+    this.addOutput(node.op);
+    this.addOutput('(');
+    this.visit(node.ref);
+    this.addOutput(')');
+    if (node.drop) {
+      this.addOutput(';\n');
+    }
+    return node;
+  }
+
+  visitStateScript(node: StateScriptNode): Node {
+    this.addOutput('stateScript ', true);
+    node.stateScriptBlock = this.visit(node.stateScriptBlock) as BlockNode;
+    this.addOutput('\n');
     return node;
   }
 }

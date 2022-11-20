@@ -55,6 +55,55 @@ export const reverseIntrospectionOpMapping = Object.fromEntries(
   Object.entries(introspectionOpMapping).map(([k, v]) => ([v, k])),
 );
 
+export enum RadiantOp {
+  OP_STATESEPARATOR = 0xbd,
+  OP_STATESEPARATORINDEX_UTXO = 0xbe,
+  OP_STATESEPARATORINDEX_OUTPUT = 0xbf,
+
+  OP_SHA512_256 = 0xce,
+  OP_HASH512_256 = 0xcf,
+
+  OP_PUSHINPUTREF = 0xd0,
+  OP_REQUIREINPUTREF = 0xd1,
+  OP_DISALLOWPUSHINPUTREF = 0xd2,
+  OP_DISALLOWPUSHINPUTREFSIBLING = 0xd3,
+
+  OP_REFHASHDATASUMMARY_UTXO = 0xd4,
+  OP_REFHASHVALUESUM_UTXOS = 0xd5,
+  OP_REFHASHDATASUMMARY_OUTPUT = 0xd6,
+  OP_REFHASHVALUESUM_OUTPUTS = 0xd7,
+
+  OP_PUSHINPUTREFSINGLETON = 0xd8,
+  OP_REFTYPE_UTXO = 0xd9,
+  OP_REFTYPE_OUTPUT = 0xda,
+
+  OP_REFVALUESUM_UTXOS = 0xdb,
+  OP_REFVALUESUM_OUTPUTS = 0xdc,
+  OP_REFOUTPUTCOUNT_UTXOS = 0xdd,
+  OP_REFOUTPUTCOUNT_OUTPUTS = 0xde,
+  OP_REFOUTPUTCOUNTZEROVALUED_UTXOS = 0xdf,
+  OP_REFOUTPUTCOUNTZEROVALUED_OUTPUTS = 0xe0,
+  OP_REFDATASUMMARY_UTXO = 0xe1,
+  OP_REFDATASUMMARY_OUTPUT = 0xe2,
+
+  OP_CODESCRIPTHASHVALUESUM_UTXOS = 0xe3,
+  OP_CODESCRIPTHASHVALUESUM_OUTPUTS = 0xe4,
+  OP_CODESCRIPTHASHOUTPUTCOUNT_UTXOS = 0xe5,
+  OP_CODESCRIPTHASHOUTPUTCOUNT_OUTPUTS = 0xe6,
+  OP_CODESCRIPTHASHZEROVALUEDOUTPUTCOUNT_UTXOS = 0xe7,
+  OP_CODESCRIPTHASHZEROVALUEDOUTPUTCOUNT_OUTPUTS = 0xe8,
+  OP_CODESCRIPTBYTECODE_UTXO = 0xe9,
+  OP_CODESCRIPTBYTECODE_OUTPUT = 0xea,
+  OP_STATESCRIPTBYTECODE_UTXO = 0xeb,
+  OP_STATESCRIPTBYTECODE_OUTPUT = 0xec,
+}
+
+const radiantOpMapping: any = Object.fromEntries(Object.entries(RadiantOp).map(([k, v]) => ([k, `OP_UNKNOWN${v}`])));
+
+export const reverseRadiantOpMapping = Object.fromEntries(
+  Object.entries(radiantOpMapping).map(([k, v]) => ([v, k])),
+);
+
 export function scriptToAsm(script: Script): string {
   return bytecodeToAsm(scriptToBytecode(script));
 }
@@ -94,7 +143,7 @@ export function asmToBytecode(asm: string): Uint8Array {
   asm = asm.replace(/\s+/g, ' ').trim();
 
   // Replace introspection ops with OP_UNKNOWN... so Libauth gets it
-  asm = asm.split(' ').map((token) => introspectionOpMapping[token] ?? token).join(' ');
+  asm = asm.split(' ').map((token) => introspectionOpMapping[token] ?? radiantOpMapping[token] ?? token).join(' ');
 
   // Convert the ASM tokens to AuthenticationInstructions
   const instructions = asm.split(' ').map((token) => {
@@ -119,7 +168,7 @@ export function bytecodeToAsm(bytecode: Uint8Array): string {
   asm = asm.replace(/(^|\s)0x/g, ' ');
 
   // Replace OP_UNKNOWN... with the correct ops
-  asm = asm.split(' ').map((token) => reverseIntrospectionOpMapping[token] ?? token).join(' ');
+  asm = asm.split(' ').map((token) => reverseIntrospectionOpMapping[token] ?? reverseRadiantOpMapping[token] ?? token).join(' ');
 
   // Remove any duplicate whitespace
   asm = asm.replace(/\s+/g, ' ').trim();

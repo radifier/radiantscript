@@ -12,6 +12,9 @@ import {
   InstantiationNode,
   AssignNode,
   TupleAssignmentNode,
+  PushDataNode,
+  PushRefNode,
+  StateScriptNode,
 } from '../ast/AST.js';
 import AstTraversal from '../ast/AstTraversal.js';
 import { SymbolTable, Symbol, SymbolType } from '../ast/SymbolTable.js';
@@ -29,12 +32,17 @@ export default class SymbolTableTraversal extends AstTraversal {
   private functionNames: Map<string, boolean> = new Map<string, boolean>();
   private currentFunction: FunctionDefinitionNode;
   private expectedSymbolType: SymbolType = SymbolType.VARIABLE;
+  private contract: ContractNode;
 
   visitContract(node: ContractNode): Node {
+    this.contract = node;
     node.symbolTable = new SymbolTable(this.symbolTables[0]);
     this.symbolTables.unshift(node.symbolTable);
 
     node.parameters = this.visitList(node.parameters) as ParameterNode[];
+    node.functionParameters = this.visitList(node.functionParameters) as ParameterNode[];
+    node.stateScript = node.stateScript && this.visit(node.stateScript) as StateScriptNode;
+    node.statements = this.visitOptionalList(node.statements) as StatementNode[];
     node.functions = this.visitList(node.functions) as FunctionDefinitionNode[];
 
     const unusedSymbols = node.symbolTable.unusedSymbols();
@@ -158,8 +166,30 @@ export default class SymbolTableTraversal extends AstTraversal {
     node.definition.references.push(node);
 
     // Keep track of final use of variables for code generation
-    this.currentFunction.opRolls.set(node.name, node);
+    if (this.currentFunction) this.currentFunction.opRolls.set(node.name, node);
+    this.contract.opRolls.set(node.name, node);
+    this.contract.codeScriptIdentifiers.add(definition);
 
+    return node;
+  }
+
+  visitPushData(node: PushDataNode): Node {
+    if ((node.data as IdentifierNode).name) {
+      node.data = this.visit(node.data) as IdentifierNode;
+    }
+    return node;
+  }
+
+  visitPushRef(node: PushRefNode): Node {
+    if ((node.ref as IdentifierNode).name) {
+      node.ref = this.visit(node.ref) as IdentifierNode;
+    }
+    return node;
+  }
+
+  visitStateScript(node: StateScriptNode): Node {
+    node.stateScriptBlock = this.visit(node.stateScriptBlock);
+    this.contract.codeScriptIdentifiers.clear();
     return node;
   }
 }

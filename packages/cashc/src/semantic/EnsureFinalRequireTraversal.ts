@@ -13,6 +13,7 @@ import { EmptyContractError, EmptyFunctionError, FinalRequireStatementError } fr
 export default class EnsureFinalRequireTraversal extends AstTraversal {
   visitContract(node: ContractNode): ContractNode {
     node.parameters = this.visitList(node.parameters) as ParameterNode[];
+    node.functionParameters = this.visitList(node.functionParameters) as ParameterNode[];
     node.functions = this.visitList(node.functions) as FunctionDefinitionNode[];
 
     if (node.functions.length === 0) {

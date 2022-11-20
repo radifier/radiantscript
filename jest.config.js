@@ -16,9 +16,11 @@ module.exports = {
   coveragePathIgnorePatterns: [
     '<rootDir>/packages/cashc/src/grammar/',
     '<rootDir>/packages/cashc/src/cashc-cli.ts',
+    '<rootDir>/packages/cashscript',
     '<rootDir>/examples',
   ],
   testPathIgnorePatterns: [
+    '<rootDir>/packages/cashscript',
     '<rootDir>/examples',
   ],
   // TODO: This requires Jest 28, but installing Jest 28 runs into other issues

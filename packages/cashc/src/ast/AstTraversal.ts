@@ -25,6 +25,10 @@ import {
   InstantiationNode,
   TupleAssignmentNode,
   NullaryOpNode,
+  PushDataNode,
+  PushRefNode,
+  StateScriptNode,
+  UnsetNode,
 } from './AST.js';
 import AstVisitor from './AstVisitor.js';
 
@@ -36,6 +40,9 @@ export default class AstTraversal extends AstVisitor<Node> {
 
   visitContract(node: ContractNode): Node {
     node.parameters = this.visitList(node.parameters) as ParameterNode[];
+    node.functionParameters = this.visitList(node.functionParameters) as ParameterNode[];
+    node.stateScript = node.stateScript && this.visit(node.stateScript) as StateScriptNode;
+    node.statements = this.visitOptionalList(node.statements) as StatementNode[];
     node.functions = this.visitList(node.functions) as FunctionDefinitionNode[];
     return node;
   }
@@ -148,6 +155,23 @@ export default class AstTraversal extends AstVisitor<Node> {
   }
 
   visitHexLiteral(node: HexLiteralNode): Node {
+    return node;
+  }
+
+  visitPushData(node: PushDataNode): Node {
+    return node;
+  }
+
+  visitPushRef(node: PushRefNode): Node {
+    return node;
+  }
+
+  visitStateScript(node: StateScriptNode): Node {
+    node.stateScriptBlock = this.visit(node.stateScriptBlock);
+    return node;
+  }
+
+  visitUnset(node: UnsetNode): Node {
     return node;
   }
 }

@@ -10,6 +10,7 @@ import {
   resultingType,
   Script,
   scriptToAsm,
+  RadiantOp,
 } from '@cashscript/utils';
 import {
   ContractNode,
@@ -37,6 +38,11 @@ import {
   InstantiationNode,
   TupleAssignmentNode,
   NullaryOpNode,
+  PushDataNode,
+  PushRefNode,
+  StateScriptNode,
+  StatementNode,
+  UnsetNode,
 } from '../ast/AST.js';
 import AstTraversal from '../ast/AstTraversal.js';
 import { GlobalFunction, Class } from '../ast/Globals.js';
@@ -46,16 +52,21 @@ import {
   compileCast,
   compileGlobalFunction,
   compileNullaryOp,
+  compilePushRefOp,
   compileTimeOp,
   compileUnaryOp,
 } from './utils.js';
+import { Symbol } from '../ast/SymbolTable.js';
 
 export default class GenerateTargetTraversal extends AstTraversal {
   output: Script = [];
   stack: string[] = [];
+  usedSymbols: Set<Symbol> = new Set();
 
   private scopeDepth = 0;
+  private inStateScript = false;
   private currentFunction: FunctionDefinitionNode;
+  private contract: ContractNode;
 
   private emit(op: OpOrData | OpOrData[]): void {
     if (Array.isArray(op)) {
@@ -103,7 +114,12 @@ export default class GenerateTargetTraversal extends AstTraversal {
   }
 
   visitContract(node: ContractNode): Node {
+    this.contract = node;
     node.parameters = this.visitList(node.parameters) as ParameterNode[];
+    // Parameters are reversed to match sCrypt behaviour
+    node.functionParameters = this.visitList(node.functionParameters.reverse()) as ParameterNode[];
+    node.stateScript = node.stateScript && this.visit(node.stateScript) as StateScriptNode;
+    node.statements = this.visitOptionalList(node.statements) as StatementNode[];
     if (node.functions.length === 1) {
       node.functions = this.visitList(node.functions) as FunctionDefinitionNode[];
     } else {
@@ -149,7 +165,8 @@ export default class GenerateTargetTraversal extends AstTraversal {
   visitFunctionDefinition(node: FunctionDefinitionNode): Node {
     this.currentFunction = node;
 
-    node.parameters = this.visitList(node.parameters) as ParameterNode[];
+    // Parameters are reversed to match sCrypt behaviour
+    node.parameters = this.visitList(node.parameters.reverse()) as ParameterNode[];
     node.body = this.visit(node.body) as BlockNode;
 
     this.removeFinalVerify();
@@ -193,7 +210,10 @@ export default class GenerateTargetTraversal extends AstTraversal {
   }
 
   visitParameter(node: ParameterNode): Node {
-    this.pushToStack(node.name, true);
+    // Contract scope constant parameters will be pushed when needed
+    if (node.scope !== 'contract' || node.modifier !== 'constant') {
+      this.pushToStack(node.name, true);
+    }
     return node;
   }
 
@@ -214,7 +234,15 @@ export default class GenerateTargetTraversal extends AstTraversal {
 
   visitAssign(node: AssignNode): Node {
     node.expression = this.visit(node.expression);
-    if (this.scopeDepth > 0) {
+    if (node.identifier.definition) this.usedSymbols.add(node.identifier.definition);
+    let replace = this.scopeDepth > 0;
+    if (this.scopeDepth === 1 && this.inStateScript && node.identifier.definition) {
+      // To create a more optimal state script don't replace variables that
+      // are unused in the code script
+      replace = this.contract.codeScriptIdentifiers.has(node.identifier.definition);
+    }
+
+    if (replace) {
       this.emitReplace(this.getStackIndex(node.identifier.name));
       this.popFromStack();
     } else {
@@ -343,17 +371,6 @@ export default class GenerateTargetTraversal extends AstTraversal {
       this.emit(hexToBin('88ac'));
       this.emit(Op.OP_CAT);
       this.popFromStack(2);
-    } else if (node.identifier.name === Class.LOCKING_BYTECODE_P2SH) {
-      // OP_HASH160 OP_PUSH<20>
-      this.emit(hexToBin('a914'));
-      this.pushToStack('(value)');
-      // <script hash>
-      this.visit(node.parameters[0]);
-      this.emit(Op.OP_CAT);
-      // OP_EQUAL
-      this.emit(hexToBin('87'));
-      this.emit(Op.OP_CAT);
-      this.popFromStack(2);
     } else if (node.identifier.name === Class.LOCKING_BYTECODE_NULLDATA) {
       // Total script = OP_RETURN (<VarInt> <chunk>)+
       // OP_RETURN
@@ -446,6 +463,17 @@ export default class GenerateTargetTraversal extends AstTraversal {
   }
 
   visitIdentifier(node: IdentifierNode): Node {
+    if ((node.definition?.definition as ParameterNode)?.scope === 'contract' && (node.definition?.definition as ParameterNode)?.modifier === 'constant') {
+      // Contract parameter
+      // Emit as an unknown 255 op code followed by the name of the variable
+      // This will be replaced later with a $ placeholder string
+      this.emit([255, encodeString(node.name.replace(/^\$/, ''))]);
+      this.pushToStack(('value'));
+      return node;
+    }
+
+    if (node.definition) this.usedSymbols.add(node.definition);
+
     const stackIndex = this.getStackIndex(node.name);
     this.emit(encodeInt(stackIndex));
 
@@ -457,12 +485,15 @@ export default class GenerateTargetTraversal extends AstTraversal {
     } else {
       this.emit(Op.OP_PICK);
     }
-
     this.pushToStack('(value)');
     return node;
   }
 
   isOpRoll(node: IdentifierNode): boolean {
+    if (!this.currentFunction) {
+      return this.contract.opRolls.get(node.name) === node
+        && (this.scopeDepth === 0 || (this.scopeDepth === 1 && this.inStateScript));
+    }
     return this.currentFunction.opRolls.get(node.name) === node && this.scopeDepth === 0;
   }
 
@@ -487,6 +518,69 @@ export default class GenerateTargetTraversal extends AstTraversal {
   visitHexLiteral(node: HexLiteralNode): Node {
     this.emit(node.value);
     this.pushToStack('(value)');
+    return node;
+  }
+
+  visitPushData(node: PushDataNode): Node {
+    if ((node.data as HexLiteralNode).value) {
+      this.emit((node.data as HexLiteralNode).value);
+    } else {
+      this.emit([255, encodeString((node.data as IdentifierNode).name.replace(/^\$/, ''))]);
+    }
+    this.emit(Op.OP_DROP);
+
+    return node;
+  }
+
+  visitPushRef(node: PushRefNode): Node {
+    this.emit(compilePushRefOp(node.op));
+    if ((node.ref as HexLiteralNode).value) {
+      this.emit((node.ref as HexLiteralNode).value);
+    } else {
+      this.emit([255, encodeString((node.ref as IdentifierNode).name.replace(/^\$/, ''))]);
+    }
+
+    if (node.drop) {
+      // Drop ref from stack if this is a statement
+      this.emit(Op.OP_DROP);
+    } else {
+      this.pushToStack('(value)');
+    }
+
+    return node;
+  }
+
+  visitStateScript(node: StateScriptNode): Node {
+    this.scopeDepth += 1;
+    const stackDepth = this.stack.length;
+    this.inStateScript = true;
+    node.stateScriptBlock = this.visit(node.stateScriptBlock);
+    this.inStateScript = false;
+    this.removeScopedVariables(stackDepth);
+
+    const drop = [...this.usedSymbols]
+      .filter((v) => !this.contract.codeScriptIdentifiers.has(v) && this.stack.indexOf(v.name) >= 0)
+      .map((v) => v.name);
+    drop.forEach((name) => {
+      while (this.stack.indexOf(name) >= 0) {
+        const stackIndex = this.getStackIndex(name);
+        this.emit(encodeInt(stackIndex));
+        this.emit(Op.OP_ROLL);
+        this.emit(Op.OP_DROP);
+        this.removeFromStack(stackIndex);
+      }
+    });
+    this.emit(RadiantOp.OP_STATESEPARATOR);
+    this.scopeDepth -= 1;
+    return node;
+  }
+
+  visitUnset(node: UnsetNode): Node {
+    const stackIndex = this.getStackIndex(node.identifier.name);
+    this.emit(encodeInt(stackIndex));
+    this.emit(Op.OP_ROLL);
+    this.emit(Op.OP_DROP);
+    this.removeFromStack(stackIndex);
     return node;
   }
 }

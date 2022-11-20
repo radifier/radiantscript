@@ -9,6 +9,8 @@ import { FunctionCallExpressionContext } from "./CashScriptParser";
 import { InstantiationContext } from "./CashScriptParser";
 import { TupleIndexOpContext } from "./CashScriptParser";
 import { UnaryIntrospectionOpContext } from "./CashScriptParser";
+import { IntrospectionFunctionCallContext } from "./CashScriptParser";
+import { PushRefExpressionContext } from "./CashScriptParser";
 import { UnaryOpContext } from "./CashScriptParser";
 import { BinaryOpContext } from "./CashScriptParser";
 import { ArrayContext } from "./CashScriptParser";
@@ -34,6 +36,11 @@ import { TimeOpStatementContext } from "./CashScriptParser";
 import { RequireStatementContext } from "./CashScriptParser";
 import { IfStatementContext } from "./CashScriptParser";
 import { FunctionCallContext } from "./CashScriptParser";
+import { StateScriptStatementContext } from "./CashScriptParser";
+import { PushDataStatementContext } from "./CashScriptParser";
+import { PushRefStatementContext } from "./CashScriptParser";
+import { PushRefContext } from "./CashScriptParser";
+import { UnsetStatementContext } from "./CashScriptParser";
 import { ExpressionListContext } from "./CashScriptParser";
 import { ExpressionContext } from "./CashScriptParser";
 import { ModifierContext } from "./CashScriptParser";
@@ -124,6 +131,32 @@ export interface CashScriptListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	exitUnaryIntrospectionOp?: (ctx: UnaryIntrospectionOpContext) => void;
+
+	/**
+	 * Enter a parse tree produced by the `IntrospectionFunctionCall`
+	 * labeled alternative in `CashScriptParser.expression`.
+	 * @param ctx the parse tree
+	 */
+	enterIntrospectionFunctionCall?: (ctx: IntrospectionFunctionCallContext) => void;
+	/**
+	 * Exit a parse tree produced by the `IntrospectionFunctionCall`
+	 * labeled alternative in `CashScriptParser.expression`.
+	 * @param ctx the parse tree
+	 */
+	exitIntrospectionFunctionCall?: (ctx: IntrospectionFunctionCallContext) => void;
+
+	/**
+	 * Enter a parse tree produced by the `PushRefExpression`
+	 * labeled alternative in `CashScriptParser.expression`.
+	 * @param ctx the parse tree
+	 */
+	enterPushRefExpression?: (ctx: PushRefExpressionContext) => void;
+	/**
+	 * Exit a parse tree produced by the `PushRefExpression`
+	 * labeled alternative in `CashScriptParser.expression`.
+	 * @param ctx the parse tree
+	 */
+	exitPushRefExpression?: (ctx: PushRefExpressionContext) => void;
 
 	/**
 	 * Enter a parse tree produced by the `UnaryOp`
@@ -411,6 +444,61 @@ export interface CashScriptListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	exitFunctionCall?: (ctx: FunctionCallContext) => void;
+
+	/**
+	 * Enter a parse tree produced by `CashScriptParser.stateScriptStatement`.
+	 * @param ctx the parse tree
+	 */
+	enterStateScriptStatement?: (ctx: StateScriptStatementContext) => void;
+	/**
+	 * Exit a parse tree produced by `CashScriptParser.stateScriptStatement`.
+	 * @param ctx the parse tree
+	 */
+	exitStateScriptStatement?: (ctx: StateScriptStatementContext) => void;
+
+	/**
+	 * Enter a parse tree produced by `CashScriptParser.pushDataStatement`.
+	 * @param ctx the parse tree
+	 */
+	enterPushDataStatement?: (ctx: PushDataStatementContext) => void;
+	/**
+	 * Exit a parse tree produced by `CashScriptParser.pushDataStatement`.
+	 * @param ctx the parse tree
+	 */
+	exitPushDataStatement?: (ctx: PushDataStatementContext) => void;
+
+	/**
+	 * Enter a parse tree produced by `CashScriptParser.pushRefStatement`.
+	 * @param ctx the parse tree
+	 */
+	enterPushRefStatement?: (ctx: PushRefStatementContext) => void;
+	/**
+	 * Exit a parse tree produced by `CashScriptParser.pushRefStatement`.
+	 * @param ctx the parse tree
+	 */
+	exitPushRefStatement?: (ctx: PushRefStatementContext) => void;
+
+	/**
+	 * Enter a parse tree produced by `CashScriptParser.pushRef`.
+	 * @param ctx the parse tree
+	 */
+	enterPushRef?: (ctx: PushRefContext) => void;
+	/**
+	 * Exit a parse tree produced by `CashScriptParser.pushRef`.
+	 * @param ctx the parse tree
+	 */
+	exitPushRef?: (ctx: PushRefContext) => void;
+
+	/**
+	 * Enter a parse tree produced by `CashScriptParser.unsetStatement`.
+	 * @param ctx the parse tree
+	 */
+	enterUnsetStatement?: (ctx: UnsetStatementContext) => void;
+	/**
+	 * Exit a parse tree produced by `CashScriptParser.unsetStatement`.
+	 * @param ctx the parse tree
+	 */
+	exitUnsetStatement?: (ctx: UnsetStatementContext) => void;
 
 	/**
 	 * Enter a parse tree produced by `CashScriptParser.expressionList`.

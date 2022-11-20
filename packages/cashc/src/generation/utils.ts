@@ -2,13 +2,14 @@ import {
   BytesType,
   encodeInt,
   IntrospectionOp,
+  RadiantOp,
   Op,
   PrimitiveType,
   Script,
   Type,
 } from '@cashscript/utils';
 import { UnaryOperator, BinaryOperator, NullaryOperator } from '../ast/Operator.js';
-import { GlobalFunction, TimeOp } from '../ast/Globals.js';
+import { GlobalFunction, PushRefOp, TimeOp } from '../ast/Globals.js';
 
 export function compileTimeOp(op: TimeOp): Script {
   const mapping = {
@@ -45,6 +46,34 @@ export function compileGlobalFunction(fn: GlobalFunction): Script {
     [GlobalFunction.HASH160]: [Op.OP_HASH160],
     [GlobalFunction.HASH256]: [Op.OP_HASH256],
     [GlobalFunction.WITHIN]: [Op.OP_WITHIN],
+    [GlobalFunction.SHA512_256]: [RadiantOp.OP_SHA512_256],
+    [GlobalFunction.HASH512_256]: [RadiantOp.OP_HASH512_256],
+    [GlobalFunction.CODESCRIPTHASHOUTPUTCOUNT_OUTPUTS]:
+      [RadiantOp.OP_CODESCRIPTHASHOUTPUTCOUNT_OUTPUTS],
+    [GlobalFunction.CODESCRIPTHASHVALUESUM_OUTPUTS]: [RadiantOp.OP_CODESCRIPTHASHVALUESUM_OUTPUTS],
+    [GlobalFunction.CODESCRIPTHASHZEROVALUEDOUTPUTCOUNT_OUTPUTS]:
+      [RadiantOp.OP_CODESCRIPTHASHZEROVALUEDOUTPUTCOUNT_OUTPUTS],
+    [GlobalFunction.REFHASHVALUESUM_UTXOS]: [RadiantOp.OP_REFHASHVALUESUM_UTXOS],
+    [GlobalFunction.REFHASHVALUESUM_OUTPUTS]: [RadiantOp.OP_REFHASHVALUESUM_OUTPUTS],
+    [GlobalFunction.REFTYPE_UTXO]: [RadiantOp.OP_REFTYPE_UTXO],
+    [GlobalFunction.REFTYPE_OUTPUT]: [RadiantOp.OP_REFTYPE_OUTPUT],
+    [GlobalFunction.REFVALUESUM_UTXOS]: [RadiantOp.OP_REFVALUESUM_UTXOS],
+    [GlobalFunction.REFVALUESUM_OUTPUTS]: [RadiantOp.OP_REFVALUESUM_OUTPUTS],
+    [GlobalFunction.REFOUTPUTCOUNT_UTXOS]: [RadiantOp.OP_REFOUTPUTCOUNT_UTXOS],
+    [GlobalFunction.REFOUTPUTCOUNT_OUTPUTS]: [RadiantOp.OP_REFOUTPUTCOUNT_OUTPUTS],
+    [GlobalFunction.REFOUTPUTCOUNTZEROVALUED_UTXOS]: [RadiantOp.OP_REFOUTPUTCOUNTZEROVALUED_UTXOS],
+    [GlobalFunction.REFOUTPUTCOUNTZEROVALUED_OUTPUTS]:
+      [RadiantOp.OP_REFOUTPUTCOUNTZEROVALUED_OUTPUTS],
+    [GlobalFunction.CODESCRIPTHASHVALUESUM_UTXOS]: [RadiantOp.OP_CODESCRIPTHASHVALUESUM_UTXOS],
+    [GlobalFunction.CODESCRIPTHASHVALUESUM_OUTPUTS]: [RadiantOp.OP_CODESCRIPTHASHVALUESUM_OUTPUTS],
+    [GlobalFunction.CODESCRIPTHASHOUTPUTCOUNT_UTXOS]:
+      [RadiantOp.OP_CODESCRIPTHASHOUTPUTCOUNT_UTXOS],
+    [GlobalFunction.CODESCRIPTHASHOUTPUTCOUNT_OUTPUTS]:
+      [RadiantOp.OP_CODESCRIPTHASHOUTPUTCOUNT_OUTPUTS],
+    [GlobalFunction.CODESCRIPTHASHZEROVALUEDOUTPUTCOUNT_UTXOS]:
+      [RadiantOp.OP_CODESCRIPTHASHZEROVALUEDOUTPUTCOUNT_UTXOS],
+    [GlobalFunction.CODESCRIPTHASHZEROVALUEDOUTPUTCOUNT_OUTPUTS]:
+      [RadiantOp.OP_CODESCRIPTHASHZEROVALUEDOUTPUTCOUNT_OUTPUTS],
   };
 
   return mapping[fn];
@@ -92,8 +121,18 @@ export function compileUnaryOp(op: UnaryOperator): Op[] {
     [UnaryOperator.INPUT_OUTPOINT_INDEX]: [IntrospectionOp.OP_OUTPOINTINDEX],
     [UnaryOperator.INPUT_UNLOCKING_BYTECODE]: [IntrospectionOp.OP_INPUTBYTECODE],
     [UnaryOperator.INPUT_SEQUENCE_NUMBER]: [IntrospectionOp.OP_INPUTSEQUENCENUMBER],
+    [UnaryOperator.INPUT_REFHASH_DATA_SUMMARY]: [RadiantOp.OP_REFHASHDATASUMMARY_UTXO],
+    [UnaryOperator.INPUT_REF_DATA_SUMMARY]: [RadiantOp.OP_REFDATASUMMARY_UTXO],
+    [UnaryOperator.INPUT_STATESEPARATOR_INDEX]: [RadiantOp.OP_STATESEPARATORINDEX_UTXO],
+    [UnaryOperator.INPUT_CODESCRIPTBYTECODE]: [RadiantOp.OP_CODESCRIPTBYTECODE_UTXO],
+    [UnaryOperator.INPUT_STATESCRIPTBYTECODE]: [RadiantOp.OP_STATESCRIPTBYTECODE_UTXO],
     [UnaryOperator.OUTPUT_VALUE]: [IntrospectionOp.OP_OUTPUTVALUE],
     [UnaryOperator.OUTPUT_LOCKING_BYTECODE]: [IntrospectionOp.OP_OUTPUTBYTECODE],
+    [UnaryOperator.OUTPUT_REFHASH_DATA_SUMMARY]: [RadiantOp.OP_REFHASHDATASUMMARY_OUTPUT],
+    [UnaryOperator.OUTPUT_REF_DATA_SUMMARY]: [RadiantOp.OP_REFDATASUMMARY_OUTPUT],
+    [UnaryOperator.OUTPUT_STATESEPARATOR_INDEX]: [RadiantOp.OP_STATESEPARATORINDEX_OUTPUT],
+    [UnaryOperator.OUTPUT_CODESCRIPTBYTECODE]: [RadiantOp.OP_CODESCRIPTBYTECODE_OUTPUT],
+    [UnaryOperator.OUTPUT_STATESCRIPTBYTECODE]: [RadiantOp.OP_STATESCRIPTBYTECODE_OUTPUT],
   };
 
   return mapping[op];
@@ -107,6 +146,18 @@ export function compileNullaryOp(op: NullaryOperator): Op[] {
     [NullaryOperator.OUTPUT_COUNT]: [IntrospectionOp.OP_TXOUTPUTCOUNT],
     [NullaryOperator.VERSION]: [IntrospectionOp.OP_TXVERSION],
     [NullaryOperator.LOCKTIME]: [IntrospectionOp.OP_TXLOCKTIME],
+  };
+
+  return mapping[op];
+}
+
+export function compilePushRefOp(op: PushRefOp): Op {
+  const mapping = {
+    [PushRefOp.PUSHINPUTREF]: RadiantOp.OP_PUSHINPUTREF,
+    [PushRefOp.REQUIREINPUTREF]: RadiantOp.OP_REQUIREINPUTREF,
+    [PushRefOp.DISALLOWPUSHINPUTREF]: RadiantOp.OP_DISALLOWPUSHINPUTREF,
+    [PushRefOp.DISALLOWPUSHINPUTREFSIBLING]: RadiantOp.OP_DISALLOWPUSHINPUTREFSIBLING,
+    [PushRefOp.PUSHINPUTREFSINGLETON]: RadiantOp.OP_PUSHINPUTREFSINGLETON,
   };
 
   return mapping[op];

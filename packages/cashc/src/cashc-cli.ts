@@ -1,21 +1,19 @@
 #! /usr/bin/env node
-import { binToHex } from '@bitauth/libauth';
 import {
   asmToScript,
   calculateBytesize,
   countOpcodes,
   exportArtifact,
-  scriptToAsm,
-  scriptToBytecode,
 } from '@cashscript/utils';
 import { program } from 'commander';
 import fs from 'fs';
 import path from 'path';
+import { hexWithPlaceholders, asmWithPlaceholders } from './compiler.js';
 import { compileFile, version } from './index.js';
 
 program
   .storeOptionsAsProperties(false)
-  .name('cashc')
+  .name('radc')
   .version(version, '-V, --version', 'Output the version number.')
   .usage('[options] [source_file]')
   .option('-o, --output <path>', 'Specify a file to output the generated artifact.')
@@ -43,7 +41,7 @@ function run(): void {
 
   try {
     const artifact = compileFile(sourceFile);
-    const script = asmToScript(artifact.bytecode);
+    const script = asmToScript(artifact.asm);
 
     const opcount = countOpcodes(script);
     const bytesize = calculateBytesize(script);
@@ -56,12 +54,12 @@ function run(): void {
     }
 
     if (opts.asm) {
-      console.log(scriptToAsm(script));
+      console.log(asmWithPlaceholders(artifact.asm));
       return;
     }
 
     if (opts.hex) {
-      console.log(binToHex(scriptToBytecode(script)));
+      console.log(hexWithPlaceholders(artifact.asm));
       return;
     }
 
@@ -75,6 +73,9 @@ function run(): void {
       }
       return;
     }
+
+    artifact.hex = hexWithPlaceholders(artifact.asm);
+    artifact.asm = asmWithPlaceholders(artifact.asm);
 
     if (outputFile) {
       // Create output file and write the artifact to it

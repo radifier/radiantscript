@@ -18,8 +18,18 @@ export enum UnaryOperator {
   INPUT_OUTPOINT_INDEX = 'tx.inputs[i].outpointIndex',
   INPUT_UNLOCKING_BYTECODE = 'tx.inputs[i].unlockingBytecode',
   INPUT_SEQUENCE_NUMBER = 'tx.inputs[i].sequenceNumber',
+  INPUT_REFHASH_DATA_SUMMARY = 'tx.inputs[i].refHashDataSummary',
+  INPUT_REF_DATA_SUMMARY = 'tx.inputs[i].refDataSummary',
+  INPUT_STATESEPARATOR_INDEX = 'tx.inputs[i].stateSeparatorIndex',
+  INPUT_CODESCRIPTBYTECODE = 'tx.inputs[i].codeScript',
+  INPUT_STATESCRIPTBYTECODE = 'tx.inputs[i].stateScript',
   OUTPUT_VALUE = 'tx.outputs[i].value',
   OUTPUT_LOCKING_BYTECODE = 'tx.outputs[i].lockingBytecode',
+  OUTPUT_REFHASH_DATA_SUMMARY = 'tx.outputs[i].refHashDataSummary',
+  OUTPUT_REF_DATA_SUMMARY = 'tx.outputs[i].refDataSummary',
+  OUTPUT_STATESEPARATOR_INDEX = 'tx.outputs[i].stateSeparatorIndex',
+  OUTPUT_CODESCRIPTBYTECODE = 'tx.outputs[i].codeScript',
+  OUTPUT_STATESCRIPTBYTECODE = 'tx.outputs[i].stateScript',
 }
 
 export enum BinaryOperator {

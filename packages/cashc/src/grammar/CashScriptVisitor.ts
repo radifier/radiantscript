@@ -9,6 +9,8 @@ import { FunctionCallExpressionContext } from "./CashScriptParser";
 import { InstantiationContext } from "./CashScriptParser";
 import { TupleIndexOpContext } from "./CashScriptParser";
 import { UnaryIntrospectionOpContext } from "./CashScriptParser";
+import { IntrospectionFunctionCallContext } from "./CashScriptParser";
+import { PushRefExpressionContext } from "./CashScriptParser";
 import { UnaryOpContext } from "./CashScriptParser";
 import { BinaryOpContext } from "./CashScriptParser";
 import { ArrayContext } from "./CashScriptParser";
@@ -34,6 +36,11 @@ import { TimeOpStatementContext } from "./CashScriptParser";
 import { RequireStatementContext } from "./CashScriptParser";
 import { IfStatementContext } from "./CashScriptParser";
 import { FunctionCallContext } from "./CashScriptParser";
+import { StateScriptStatementContext } from "./CashScriptParser";
+import { PushDataStatementContext } from "./CashScriptParser";
+import { PushRefStatementContext } from "./CashScriptParser";
+import { PushRefContext } from "./CashScriptParser";
+import { UnsetStatementContext } from "./CashScriptParser";
 import { ExpressionListContext } from "./CashScriptParser";
 import { ExpressionContext } from "./CashScriptParser";
 import { ModifierContext } from "./CashScriptParser";
@@ -97,6 +104,22 @@ export interface CashScriptVisitor<Result> extends ParseTreeVisitor<Result> {
 	 * @return the visitor result
 	 */
 	visitUnaryIntrospectionOp?: (ctx: UnaryIntrospectionOpContext) => Result;
+
+	/**
+	 * Visit a parse tree produced by the `IntrospectionFunctionCall`
+	 * labeled alternative in `CashScriptParser.expression`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitIntrospectionFunctionCall?: (ctx: IntrospectionFunctionCallContext) => Result;
+
+	/**
+	 * Visit a parse tree produced by the `PushRefExpression`
+	 * labeled alternative in `CashScriptParser.expression`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitPushRefExpression?: (ctx: PushRefExpressionContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by the `UnaryOp`
@@ -278,6 +301,41 @@ export interface CashScriptVisitor<Result> extends ParseTreeVisitor<Result> {
 	 * @return the visitor result
 	 */
 	visitFunctionCall?: (ctx: FunctionCallContext) => Result;
+
+	/**
+	 * Visit a parse tree produced by `CashScriptParser.stateScriptStatement`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitStateScriptStatement?: (ctx: StateScriptStatementContext) => Result;
+
+	/**
+	 * Visit a parse tree produced by `CashScriptParser.pushDataStatement`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitPushDataStatement?: (ctx: PushDataStatementContext) => Result;
+
+	/**
+	 * Visit a parse tree produced by `CashScriptParser.pushRefStatement`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitPushRefStatement?: (ctx: PushRefStatementContext) => Result;
+
+	/**
+	 * Visit a parse tree produced by `CashScriptParser.pushRef`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitPushRef?: (ctx: PushRefContext) => Result;
+
+	/**
+	 * Visit a parse tree produced by `CashScriptParser.unsetStatement`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitUnsetStatement?: (ctx: UnsetStatementContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `CashScriptParser.expressionList`.

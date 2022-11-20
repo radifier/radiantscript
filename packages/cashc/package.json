@@ -27,7 +27,7 @@
   "types": "dist/module/index",
   "sideEffects": false,
   "bin": {
-    "cashc": "dist/main/cashc-cli.js"
+    "radc": "dist/main/cashc-cli.js"
   },
   "directories": {
     "lib": "src",
