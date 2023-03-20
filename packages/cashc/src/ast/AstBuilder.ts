@@ -73,7 +73,7 @@ import {
   PushRefContext,
   IntrospectionFunctionCallContext,
   UnsetStatementContext,
-  StateScriptStatementContext,
+  StateScriptContext,
 } from '../grammar/CashScriptParser.js';
 import { CashScriptVisitor } from '../grammar/CashScriptVisitor.js';
 import { Location } from './Location.js';
@@ -130,16 +130,14 @@ export default class AstBuilder
 
   visitContractDefinition(ctx: ContractDefinitionContext): ContractNode {
     const name = ctx.Identifier().text;
-    const contractParameters = ctx.parameterList()[0].parameter().map((p) => {
-      const node = this.visit(p) as ParameterNode;
-      node.scope = 'contract';
-      return node;
-    });
+    const contractParameters = ctx.parameterList()[0]?.parameter().map(
+      (p) => this.visit(p) as ParameterNode,
+    ) || [];
     const functionParameters = ctx.parameterList()[1]?.parameter().map(
       (p) => this.visit(p) as ParameterNode,
     ) || [];
-    const stateScriptStatement = ctx.stateScriptStatement();
-    const stateScript = stateScriptStatement && this.visit(stateScriptStatement) as StateScriptNode;
+    const ctxStateScript = ctx.stateScript();
+    const stateScript = ctxStateScript && this.visit(ctxStateScript) as StateScriptNode;
     const statements = ctx.statement().map((s) => this.visit(s) as StatementNode);
     const functions = ctx.functionDefinition().map((f) => this.visit(f) as FunctionDefinitionNode);
     const contract = new ContractNode(
@@ -458,9 +456,9 @@ export default class AstBuilder
     return pushRef;
   }
 
-  visitStateScriptStatement(ctx: StateScriptStatementContext): StateScriptNode {
-    const stateScriptBlock = this.visit(ctx._stateScriptBlock) as StatementNode;
-    return new StateScriptNode(stateScriptBlock);
+  visitStateScript(ctx: StateScriptContext): StateScriptNode {
+    const statements = ctx.statement().map((s) => this.visit(s) as StatementNode);
+    return new StateScriptNode(statements);
   }
 
   visitUnsetStatement(ctx: UnsetStatementContext): UnsetNode {

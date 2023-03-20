@@ -1,9 +1,8 @@
 pragma radiantscript ^0.1.0;
 
-contract Radiant(bytes36 constant $ref) {
-    state {
-        require(true);
-    }
+contract Radiant(bytes36 inline REF) {
+    require(true);
+    stateSeparator;
 
     function spend() {
         // Push ref expressions
@@ -111,7 +110,7 @@ contract Radiant(bytes36 constant $ref) {
         require(hash512_256(0xff) == 0x00);
 
         // Push ref with identifier
-        pushInputRef($ref);
+        pushInputRef(REF);
 
         require(true);
     }

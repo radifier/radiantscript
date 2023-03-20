@@ -24,6 +24,8 @@ import { PragmaValueContext } from "./CashScriptParser";
 import { VersionConstraintContext } from "./CashScriptParser";
 import { VersionOperatorContext } from "./CashScriptParser";
 import { ContractDefinitionContext } from "./CashScriptParser";
+import { StateScriptContext } from "./CashScriptParser";
+import { StateSeparatorContext } from "./CashScriptParser";
 import { FunctionDefinitionContext } from "./CashScriptParser";
 import { ParameterListContext } from "./CashScriptParser";
 import { ParameterContext } from "./CashScriptParser";
@@ -36,7 +38,6 @@ import { TimeOpStatementContext } from "./CashScriptParser";
 import { RequireStatementContext } from "./CashScriptParser";
 import { IfStatementContext } from "./CashScriptParser";
 import { FunctionCallContext } from "./CashScriptParser";
-import { StateScriptStatementContext } from "./CashScriptParser";
 import { PushDataStatementContext } from "./CashScriptParser";
 import { PushRefStatementContext } from "./CashScriptParser";
 import { PushRefContext } from "./CashScriptParser";
@@ -314,6 +315,28 @@ export interface CashScriptListener extends ParseTreeListener {
 	exitContractDefinition?: (ctx: ContractDefinitionContext) => void;
 
 	/**
+	 * Enter a parse tree produced by `CashScriptParser.stateScript`.
+	 * @param ctx the parse tree
+	 */
+	enterStateScript?: (ctx: StateScriptContext) => void;
+	/**
+	 * Exit a parse tree produced by `CashScriptParser.stateScript`.
+	 * @param ctx the parse tree
+	 */
+	exitStateScript?: (ctx: StateScriptContext) => void;
+
+	/**
+	 * Enter a parse tree produced by `CashScriptParser.stateSeparator`.
+	 * @param ctx the parse tree
+	 */
+	enterStateSeparator?: (ctx: StateSeparatorContext) => void;
+	/**
+	 * Exit a parse tree produced by `CashScriptParser.stateSeparator`.
+	 * @param ctx the parse tree
+	 */
+	exitStateSeparator?: (ctx: StateSeparatorContext) => void;
+
+	/**
 	 * Enter a parse tree produced by `CashScriptParser.functionDefinition`.
 	 * @param ctx the parse tree
 	 */
@@ -444,17 +467,6 @@ export interface CashScriptListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	exitFunctionCall?: (ctx: FunctionCallContext) => void;
-
-	/**
-	 * Enter a parse tree produced by `CashScriptParser.stateScriptStatement`.
-	 * @param ctx the parse tree
-	 */
-	enterStateScriptStatement?: (ctx: StateScriptStatementContext) => void;
-	/**
-	 * Exit a parse tree produced by `CashScriptParser.stateScriptStatement`.
-	 * @param ctx the parse tree
-	 */
-	exitStateScriptStatement?: (ctx: StateScriptStatementContext) => void;
 
 	/**
 	 * Enter a parse tree produced by `CashScriptParser.pushDataStatement`.

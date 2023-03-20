@@ -167,7 +167,7 @@ export default class AstTraversal extends AstVisitor<Node> {
   }
 
   visitStateScript(node: StateScriptNode): Node {
-    node.stateScriptBlock = this.visit(node.stateScriptBlock);
+    node.statements = this.visitOptionalList(node.statements) as StatementNode[];
     return node;
   }
 

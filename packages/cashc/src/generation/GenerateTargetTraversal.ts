@@ -45,7 +45,7 @@ import {
   UnsetNode,
 } from '../ast/AST.js';
 import AstTraversal from '../ast/AstTraversal.js';
-import { GlobalFunction, Class } from '../ast/Globals.js';
+import { GlobalFunction, Class, Modifier } from '../ast/Globals.js';
 import { BinaryOperator } from '../ast/Operator.js';
 import {
   compileBinaryOp,
@@ -210,8 +210,8 @@ export default class GenerateTargetTraversal extends AstTraversal {
   }
 
   visitParameter(node: ParameterNode): Node {
-    // Contract scope constant parameters will be pushed when needed
-    if (node.scope !== 'contract' || node.modifier !== 'constant') {
+    // Inline parameters will be pushed when needed
+    if (node.modifier !== Modifier.INLINE) {
       this.pushToStack(node.name, true);
     }
     return node;
@@ -236,7 +236,7 @@ export default class GenerateTargetTraversal extends AstTraversal {
     node.expression = this.visit(node.expression);
     if (node.identifier.definition) this.usedSymbols.add(node.identifier.definition);
     let replace = this.scopeDepth > 0;
-    if (this.scopeDepth === 1 && this.inStateScript && node.identifier.definition) {
+    if (this.scopeDepth === 0 && this.inStateScript && node.identifier.definition) {
       // To create a more optimal state script don't replace variables that
       // are unused in the code script
       replace = this.contract.codeScriptIdentifiers.has(node.identifier.definition);
@@ -463,8 +463,8 @@ export default class GenerateTargetTraversal extends AstTraversal {
   }
 
   visitIdentifier(node: IdentifierNode): Node {
-    if ((node.definition?.definition as ParameterNode)?.scope === 'contract' && (node.definition?.definition as ParameterNode)?.modifier === 'constant') {
-      // Contract parameter
+    if ((node.definition?.definition as ParameterNode)?.modifier === 'inline') {
+      // Inline parameter
       // Emit as an unknown 255 op code followed by the name of the variable
       // This will be replaced later with a $ placeholder string
       this.emit([255, encodeString(node.name.replace(/^\$/, ''))]);
@@ -491,8 +491,7 @@ export default class GenerateTargetTraversal extends AstTraversal {
 
   isOpRoll(node: IdentifierNode): boolean {
     if (!this.currentFunction) {
-      return this.contract.opRolls.get(node.name) === node
-        && (this.scopeDepth === 0 || (this.scopeDepth === 1 && this.inStateScript));
+      return this.contract.opRolls.get(node.name) === node && (this.scopeDepth === 0);
     }
     return this.currentFunction.opRolls.get(node.name) === node && this.scopeDepth === 0;
   }
@@ -551,12 +550,9 @@ export default class GenerateTargetTraversal extends AstTraversal {
   }
 
   visitStateScript(node: StateScriptNode): Node {
-    this.scopeDepth += 1;
-    const stackDepth = this.stack.length;
     this.inStateScript = true;
-    node.stateScriptBlock = this.visit(node.stateScriptBlock);
+    node.statements = this.visitOptionalList(node.statements) as StatementNode[];
     this.inStateScript = false;
-    this.removeScopedVariables(stackDepth);
 
     const drop = [...this.usedSymbols]
       .filter((v) => !this.contract.codeScriptIdentifiers.has(v) && this.stack.indexOf(v.name) >= 0)
@@ -571,7 +567,6 @@ export default class GenerateTargetTraversal extends AstTraversal {
       }
     });
     this.emit(RadiantOp.OP_STATESEPARATOR);
-    this.scopeDepth -= 1;
     return node;
   }
 

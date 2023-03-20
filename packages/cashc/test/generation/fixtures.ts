@@ -566,7 +566,7 @@ export const fixtures: Fixture[] = [
           type: 'constructor',
           params: [
             {
-              name: 'ref',
+              name: 'REF',
               type: 'bytes',
             },
           ],
@@ -675,7 +675,7 @@ export const fixtures: Fixture[] = [
         + 'ff OP_HASH512_256 00 OP_EQUALVERIFY '
 
         // Push ref with identifier
-        + 'OP_PUSHINPUTREF OP_UNKNOWN255 726566 OP_DROP '
+        + 'OP_PUSHINPUTREF OP_UNKNOWN255 524546 OP_DROP '
 
         + 'OP_1',
     },
@@ -737,13 +737,13 @@ export const fixtures: Fixture[] = [
           type: 'constructor',
           params: [
             {
-              name: 'ref',
+              name: 'REF',
               type: 'bytes',
             },
           ],
         },
       ],
-      asm: 'OP_PUSHINPUTREF OP_UNKNOWN255 726566 OP_DROP OP_ROT OP_1ADD OP_1 OP_IF OP_OVER OP_1ADD OP_ROT OP_DROP OP_SWAP OP_ENDIF OP_2 OP_PICK OP_1 OP_NUMEQUALVERIFY OP_2DROP OP_STATESEPARATOR OP_OVER OP_0 OP_NUMEQUAL OP_IF OP_ROT OP_ADD OP_3 OP_NUMEQUAL OP_NIP OP_ELSE OP_SWAP OP_1 OP_NUMEQUALVERIFY OP_ADD OP_4 OP_NUMEQUAL OP_ENDIF',
+      asm: 'OP_PUSHINPUTREF OP_UNKNOWN255 524546 OP_DROP OP_ROT OP_1ADD OP_1 OP_IF OP_OVER OP_1ADD OP_ROT OP_DROP OP_SWAP OP_ENDIF OP_2 OP_PICK OP_1 OP_NUMEQUALVERIFY OP_2DROP OP_STATESEPARATOR OP_OVER OP_0 OP_NUMEQUAL OP_IF OP_ROT OP_ADD OP_3 OP_NUMEQUAL OP_NIP OP_ELSE OP_SWAP OP_1 OP_NUMEQUALVERIFY OP_ADD OP_4 OP_NUMEQUAL OP_ENDIF',
     },
   },
   {
@@ -772,7 +772,7 @@ export const fixtures: Fixture[] = [
           type: 'constructor',
           params: [
             {
-              name: 'ref',
+              name: 'REF',
               type: 'bytes',
             },
             {
@@ -782,7 +782,7 @@ export const fixtures: Fixture[] = [
           ],
         },
       ],
-      asm: 'OP_DUP OP_HASH160 OP_UNKNOWN255 706b68 OP_EQUALVERIFY OP_CHECKSIGVERIFY OP_STATESEPARATOR OP_PUSHINPUTREF OP_UNKNOWN255 726566 OP_INPUTINDEX OP_CODESCRIPTBYTECODE_UTXO OP_HASH256 OP_DUP OP_CODESCRIPTHASHOUTPUTCOUNT_OUTPUTS OP_ROT OP_REFOUTPUTCOUNT_OUTPUTS OP_NUMEQUALVERIFY OP_DUP OP_CODESCRIPTHASHVALUESUM_UTXOS OP_SWAP OP_CODESCRIPTHASHVALUESUM_OUTPUTS OP_NUMEQUAL',
+      asm: 'OP_DUP OP_HASH160 OP_UNKNOWN255 706b68 OP_EQUALVERIFY OP_CHECKSIGVERIFY OP_STATESEPARATOR OP_PUSHINPUTREF OP_UNKNOWN255 524546 OP_INPUTINDEX OP_CODESCRIPTBYTECODE_UTXO OP_HASH256 OP_DUP OP_CODESCRIPTHASHOUTPUTCOUNT_OUTPUTS OP_ROT OP_REFOUTPUTCOUNT_OUTPUTS OP_NUMEQUALVERIFY OP_DUP OP_CODESCRIPTHASHVALUESUM_UTXOS OP_SWAP OP_CODESCRIPTHASHVALUESUM_OUTPUTS OP_NUMEQUAL',
     },
   },
 ];

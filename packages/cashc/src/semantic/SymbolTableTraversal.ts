@@ -188,7 +188,7 @@ export default class SymbolTableTraversal extends AstTraversal {
   }
 
   visitStateScript(node: StateScriptNode): Node {
-    node.stateScriptBlock = this.visit(node.stateScriptBlock);
+    node.statements = this.visitOptionalList(node.statements) as StatementNode[];
     this.contract.codeScriptIdentifiers.clear();
     return node;
   }

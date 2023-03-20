@@ -343,7 +343,7 @@ export default class TypeCheckTraversal extends AstTraversal {
     const identifier = (node.data as IdentifierNode);
     if (identifier.name) {
       const parameter = identifier.definition?.definition as ParameterNode;
-      if (parameter?.modifier !== Modifier.CONSTANT || parameter?.scope !== 'contract') {
+      if (parameter?.modifier !== Modifier.INLINE) {
         throw new PushTypeError(node.data);
       }
     }
@@ -359,7 +359,7 @@ export default class TypeCheckTraversal extends AstTraversal {
     const identifier = (node.ref as IdentifierNode);
     if (identifier.name) {
       const parameter = identifier.definition?.definition as ParameterNode;
-      if (parameter?.modifier !== Modifier.CONSTANT || parameter?.scope !== 'contract') {
+      if (parameter?.modifier !== Modifier.INLINE) {
         throw new PushTypeError(node.ref);
       }
     }

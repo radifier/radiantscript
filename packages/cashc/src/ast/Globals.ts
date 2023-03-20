@@ -67,6 +67,7 @@ export enum Class {
 
 export enum Modifier {
   CONSTANT = 'constant',
+  INLINE = 'inline',
 }
 
 export const GLOBAL_SYMBOL_TABLE = new SymbolTable();

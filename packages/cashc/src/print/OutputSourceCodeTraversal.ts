@@ -304,9 +304,8 @@ export default class OutputSourceCodeTraversal extends AstTraversal {
   }
 
   visitStateScript(node: StateScriptNode): Node {
-    this.addOutput('stateScript ', true);
-    node.stateScriptBlock = this.visit(node.stateScriptBlock) as BlockNode;
-    this.addOutput('\n');
+    node.statements = this.visitOptionalList(node.statements) as StatementNode[];
+    this.addOutput('stateSeparator;\n');
     return node;
   }
 }

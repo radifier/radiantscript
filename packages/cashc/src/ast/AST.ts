@@ -388,7 +388,7 @@ export class PushRefNode extends ExpressionNode {
 
 export class StateScriptNode extends StatementNode {
   constructor(
-    public stateScriptBlock: BlockNode,
+    public statements: StatementNode[] = [],
   ) {
     super();
   }

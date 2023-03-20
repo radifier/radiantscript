@@ -53,13 +53,13 @@ export function generateArtifact(ast: Ast, script: Script): Artifact {
     params: constructorParams,
   });
 
-  const mutableParams = contract.parameters
-    .filter((p) => p.modifier !== Modifier.CONSTANT)
+  const nonInlineParams = contract.parameters
+    .filter((p) => p.modifier !== Modifier.INLINE)
     .map((p) => `$${p.name.replace(/^\$/, '')}`)
     .reverse()
     .join(' ');
 
-  const asm = `${mutableParams} ${scriptToAsm(script)}`.trim();
+  const asm = `${nonInlineParams} ${scriptToAsm(script)}`.trim();
 
   return {
     version: 9,

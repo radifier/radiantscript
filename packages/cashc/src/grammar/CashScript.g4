@@ -25,7 +25,15 @@ versionOperator
     ;
 
 contractDefinition
-    : 'contract' Identifier parameterList parameterList? '{' stateScriptStatement? statement* functionDefinition* '}'
+    : 'contract' Identifier parameterList parameterList? '{' stateScript? statement* functionDefinition* '}'
+    ;
+
+stateScript
+    : statement+ stateSeparator
+    ;
+
+stateSeparator
+    : 'stateSeparator' ';'
     ;
 
 functionDefinition
@@ -85,10 +93,6 @@ functionCall
     : Identifier expressionList // Only built-in functions are accepted
     ;
 
-stateScriptStatement
-    : 'state' stateScriptBlock=block
-    ;
-
 pushDataStatement
     : 'pushData' '(' (HexLiteral | Identifier) ')' ';'
     ;
@@ -143,6 +147,7 @@ expression
 
 modifier
     : 'constant'
+    | 'inline'
     ;
 
 literal

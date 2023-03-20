@@ -24,6 +24,8 @@ import { PragmaValueContext } from "./CashScriptParser";
 import { VersionConstraintContext } from "./CashScriptParser";
 import { VersionOperatorContext } from "./CashScriptParser";
 import { ContractDefinitionContext } from "./CashScriptParser";
+import { StateScriptContext } from "./CashScriptParser";
+import { StateSeparatorContext } from "./CashScriptParser";
 import { FunctionDefinitionContext } from "./CashScriptParser";
 import { ParameterListContext } from "./CashScriptParser";
 import { ParameterContext } from "./CashScriptParser";
@@ -36,7 +38,6 @@ import { TimeOpStatementContext } from "./CashScriptParser";
 import { RequireStatementContext } from "./CashScriptParser";
 import { IfStatementContext } from "./CashScriptParser";
 import { FunctionCallContext } from "./CashScriptParser";
-import { StateScriptStatementContext } from "./CashScriptParser";
 import { PushDataStatementContext } from "./CashScriptParser";
 import { PushRefStatementContext } from "./CashScriptParser";
 import { PushRefContext } from "./CashScriptParser";
@@ -219,6 +220,20 @@ export interface CashScriptVisitor<Result> extends ParseTreeVisitor<Result> {
 	visitContractDefinition?: (ctx: ContractDefinitionContext) => Result;
 
 	/**
+	 * Visit a parse tree produced by `CashScriptParser.stateScript`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitStateScript?: (ctx: StateScriptContext) => Result;
+
+	/**
+	 * Visit a parse tree produced by `CashScriptParser.stateSeparator`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitStateSeparator?: (ctx: StateSeparatorContext) => Result;
+
+	/**
 	 * Visit a parse tree produced by `CashScriptParser.functionDefinition`.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -301,13 +316,6 @@ export interface CashScriptVisitor<Result> extends ParseTreeVisitor<Result> {
 	 * @return the visitor result
 	 */
 	visitFunctionCall?: (ctx: FunctionCallContext) => Result;
-
-	/**
-	 * Visit a parse tree produced by `CashScriptParser.stateScriptStatement`.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	visitStateScriptStatement?: (ctx: StateScriptStatementContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `CashScriptParser.pushDataStatement`.

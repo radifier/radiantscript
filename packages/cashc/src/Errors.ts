@@ -273,6 +273,6 @@ export class PushTypeError extends CashScriptError {
   constructor(
     node: Node,
   ) {
-    super(node, 'Push parameter must be a hex literal or contract scoped constant bytes');
+    super(node, 'Push parameter must be a hex literal or inline bytes parameter');
   }
 }

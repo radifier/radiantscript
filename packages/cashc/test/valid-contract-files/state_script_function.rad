@@ -1,15 +1,14 @@
 pragma radiantscript ^0.1.0;
 
-contract StateScriptFunction(bytes36 constant ref)
+contract StateScriptFunction(bytes36 inline REF)
 (int stateOnlyVar, int stateVar, int stateVarInIf) {
-    state {
-        pushInputRef(ref);
-        stateOnlyVar = stateOnlyVar + 1;
-        if (true) {
-            stateVarInIf = stateVarInIf + 1;
-        }
-        require(stateVar == 1);
+    pushInputRef(REF);
+    stateOnlyVar = stateOnlyVar + 1;
+    if (true) {
+        stateVarInIf = stateVarInIf + 1;
     }
+    require(stateVar == 1);
+    stateSeparator;
 
     function function1(int functionVar) {
         require(stateVar + functionVar == 3);
