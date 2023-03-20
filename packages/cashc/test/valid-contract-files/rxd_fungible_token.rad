@@ -1,7 +1,7 @@
 pragma radiantscript ^0.1.0;
 
-contract FungibleToken(bytes36 inline REF, bytes20 inline $pkh)(sig s, pubkey pk) {
-    require(hash160(pk) == $pkh);
+contract FungibleToken(bytes36 inline REF, bytes20 inline PKH)(sig s, pubkey pk) {
+    require(hash160(pk) == PKH);
     require(checkSig(s, pk));
     stateSeparator;
 

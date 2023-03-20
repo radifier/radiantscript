@@ -4,6 +4,7 @@ import {
 import { version } from '../index.js';
 import { Ast } from '../ast/AST.js';
 import { Modifier } from '../ast/Globals.js';
+import { asmWithPlaceholders } from '../compiler.js';
 
 const scryptTypeMap: { [key: string]: string } = {
   bytes20: 'Ripemd160',
@@ -59,7 +60,7 @@ export function generateArtifact(ast: Ast, script: Script): Artifact {
     .reverse()
     .join(' ');
 
-  const asm = `${nonInlineParams} ${scriptToAsm(script)}`.trim();
+  const asm = `${nonInlineParams} ${asmWithPlaceholders(scriptToAsm(script))}`.trim();
 
   return {
     version: 9,

@@ -8,7 +8,7 @@ import {
 import { program } from 'commander';
 import fs from 'fs';
 import path from 'path';
-import { hexWithPlaceholders, asmWithPlaceholders } from './compiler.js';
+import { hexWithPlaceholders } from './compiler.js';
 import { compileFile, version } from './index.js';
 
 program
@@ -54,7 +54,7 @@ function run(): void {
     }
 
     if (opts.asm) {
-      console.log(asmWithPlaceholders(artifact.asm));
+      console.log(artifact.asm);
       return;
     }
 
@@ -75,7 +75,6 @@ function run(): void {
     }
 
     artifact.hex = hexWithPlaceholders(artifact.asm);
-    artifact.asm = asmWithPlaceholders(artifact.asm);
 
     if (outputFile) {
       // Create output file and write the artifact to it

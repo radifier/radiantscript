@@ -59,12 +59,16 @@ export function parseCode(code: string): Ast {
 }
 
 export function hexWithPlaceholders(asm: string): string {
-  const matches = asm.matchAll(/OP_UNKNOWN255 ([0-9a-z]+)/g);
-  const placeholders = [...matches].map(([, name]) => binToUtf8(hexToBin(name)));
-  const parts = asm.split(/OP_UNKNOWN255 [0-9a-z]+/).map((p) => p.trim()); // Must be trimmed so ' ' parts don't get converted to 00
-  return parts.map(
-    (part: string, index: number) => `${index > 0 ? `<${placeholders[index - 1]}>` : ''}${part && binToHex(asmToBytecode(part))}`,
-  ).join('');
+  return asm
+    .split(' ')
+    .filter(Boolean)
+    .map((part: string) => {
+      if (part.startsWith('$')) {
+        return `<${part.substring(1)}>`;
+      }
+      return binToHex(asmToBytecode(part));
+    })
+    .join('');
 }
 
 export function asmWithPlaceholders(asm: string): string {
