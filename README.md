@@ -34,19 +34,20 @@ Options:
 ```solidity
 // Contract definition includes two sets of parameters. The first set is for scriptPubKey parameters
 // Second set form the first scriptSig parameters. These parameters are available to the state script and code script
-contract FungibleToken(bytes36 constant $ref, bytes20 constant $pkh)(sig s, pubkey pk) {
-    // State block defines stateScript
-    state {
-        // All uses of a contract constant parameter are placed inline
-        // Use of constant below results in a standard P2PKH script
-        require(hash160(pk) == $pkh);
-        require(checkSig(s, pk));
-    }
-    // Compiler will add OP_STATESEPARATOR following the state block
+contract FungibleToken
+(bytes36 inline REF, bytes20 inline PKH)
+(sig s, pubkey pk) {
+    // All uses of inline parameters are placed inline and should only be used once
+    // This gives the developer control over where they are placed in the compiled script
+    // Use of inline parameter below results in a standard P2PKH script instead of PKH being pushed at the start of the script
+    require(hash160(pk) == PKH);
+    require(checkSig(s, pk));
+
+    stateSeparator;
 
     // codeScript below, consisting of one or more functions
     // Statements can exist before function definitions
-    bytes36 ref = pushInputRef($ref);
+    bytes36 ref = pushInputRef(REF);
 
     // Any parameters defined in a function are added to scriptSig parameters
     function spend() {
