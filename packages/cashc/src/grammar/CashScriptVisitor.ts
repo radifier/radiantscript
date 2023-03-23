@@ -24,6 +24,8 @@ import { PragmaValueContext } from "./CashScriptParser";
 import { VersionConstraintContext } from "./CashScriptParser";
 import { VersionOperatorContext } from "./CashScriptParser";
 import { ContractDefinitionContext } from "./CashScriptParser";
+import { FunctionsContext } from "./CashScriptParser";
+import { MainIdentifierContext } from "./CashScriptParser";
 import { StateScriptContext } from "./CashScriptParser";
 import { StateSeparatorContext } from "./CashScriptParser";
 import { FunctionDefinitionContext } from "./CashScriptParser";
@@ -218,6 +220,20 @@ export interface CashScriptVisitor<Result> extends ParseTreeVisitor<Result> {
 	 * @return the visitor result
 	 */
 	visitContractDefinition?: (ctx: ContractDefinitionContext) => Result;
+
+	/**
+	 * Visit a parse tree produced by `CashScriptParser.functions`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitFunctions?: (ctx: FunctionsContext) => Result;
+
+	/**
+	 * Visit a parse tree produced by `CashScriptParser.mainIdentifier`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitMainIdentifier?: (ctx: MainIdentifierContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `CashScriptParser.stateScript`.

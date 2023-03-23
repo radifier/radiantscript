@@ -105,7 +105,7 @@ export class EmptyContractError extends CashScriptError {
   constructor(
     public node: ContractNode,
   ) {
-    super(node, `Contract ${node.name} contains no functions`);
+    super(node, `Contract ${node.name} must contain statements or return at least one function`);
   }
 }
 

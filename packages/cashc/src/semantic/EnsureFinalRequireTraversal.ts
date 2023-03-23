@@ -16,8 +16,12 @@ export default class EnsureFinalRequireTraversal extends AstTraversal {
     node.functionParameters = this.visitList(node.functionParameters) as ParameterNode[];
     node.functions = this.visitList(node.functions) as FunctionDefinitionNode[];
 
-    if (node.functions.length === 0) {
+    if (node.functions.length === 0 && node.statements.length === 0) {
       throw new EmptyContractError(node);
+    }
+
+    if (node.functions.length === 0) {
+      ensureFinalStatementIsRequire(node.statements);
     }
 
     return node;

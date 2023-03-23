@@ -120,9 +120,12 @@ export default class GenerateTargetTraversal extends AstTraversal {
     node.functionParameters = this.visitList(node.functionParameters.reverse()) as ParameterNode[];
     node.stateScript = node.stateScript && this.visit(node.stateScript) as StateScriptNode;
     node.statements = this.visitOptionalList(node.statements) as StatementNode[];
-    if (node.functions.length === 1) {
+    if (node.functions.length === 0) {
+      this.removeFinalVerify();
+      this.cleanStack();
+    } else if (node.functions.length === 1) {
       node.functions = this.visitList(node.functions) as FunctionDefinitionNode[];
-    } else {
+    } else if (node.functions.length > 1) {
       this.pushToStack('$$', true);
       node.functions = node.functions.map((f, i) => {
         const stackCopy = [...this.stack];

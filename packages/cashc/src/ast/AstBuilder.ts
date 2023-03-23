@@ -74,6 +74,7 @@ import {
   IntrospectionFunctionCallContext,
   UnsetStatementContext,
   StateScriptContext,
+  FunctionsContext,
 } from '../grammar/CashScriptParser.js';
 import { CashScriptVisitor } from '../grammar/CashScriptVisitor.js';
 import { Location } from './Location.js';
@@ -139,7 +140,8 @@ export default class AstBuilder
     const ctxStateScript = ctx.stateScript();
     const stateScript = ctxStateScript && this.visit(ctxStateScript) as StateScriptNode;
     const statements = ctx.statement().map((s) => this.visit(s) as StatementNode);
-    const functions = ctx.functionDefinition().map((f) => this.visit(f) as FunctionDefinitionNode);
+    const functions = (ctx.functions() as FunctionsContext)
+      ?.functionDefinition().map((f) => this.visit(f) as FunctionDefinitionNode) || [];
     const contract = new ContractNode(
       name, contractParameters, functions, functionParameters, stateScript, statements,
     );

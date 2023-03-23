@@ -24,6 +24,8 @@ import { PragmaValueContext } from "./CashScriptParser";
 import { VersionConstraintContext } from "./CashScriptParser";
 import { VersionOperatorContext } from "./CashScriptParser";
 import { ContractDefinitionContext } from "./CashScriptParser";
+import { FunctionsContext } from "./CashScriptParser";
+import { MainIdentifierContext } from "./CashScriptParser";
 import { StateScriptContext } from "./CashScriptParser";
 import { StateSeparatorContext } from "./CashScriptParser";
 import { FunctionDefinitionContext } from "./CashScriptParser";
@@ -313,6 +315,28 @@ export interface CashScriptListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	exitContractDefinition?: (ctx: ContractDefinitionContext) => void;
+
+	/**
+	 * Enter a parse tree produced by `CashScriptParser.functions`.
+	 * @param ctx the parse tree
+	 */
+	enterFunctions?: (ctx: FunctionsContext) => void;
+	/**
+	 * Exit a parse tree produced by `CashScriptParser.functions`.
+	 * @param ctx the parse tree
+	 */
+	exitFunctions?: (ctx: FunctionsContext) => void;
+
+	/**
+	 * Enter a parse tree produced by `CashScriptParser.mainIdentifier`.
+	 * @param ctx the parse tree
+	 */
+	enterMainIdentifier?: (ctx: MainIdentifierContext) => void;
+	/**
+	 * Exit a parse tree produced by `CashScriptParser.mainIdentifier`.
+	 * @param ctx the parse tree
+	 */
+	exitMainIdentifier?: (ctx: MainIdentifierContext) => void;
 
 	/**
 	 * Enter a parse tree produced by `CashScriptParser.stateScript`.

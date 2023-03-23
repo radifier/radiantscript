@@ -25,7 +25,15 @@ versionOperator
     ;
 
 contractDefinition
-    : 'contract' Identifier parameterList parameterList? '{' stateScript? statement* functionDefinition* '}'
+    : 'contract' Identifier '=' parameterList '=>' parameterList '=>' '{' stateScript? statement* functions? '}'
+    ;
+
+functions
+    : 'return' '{' (functionDefinition (',' functionDefinition)* ','?)? '}'
+    ;
+
+mainIdentifier
+    : Identifier
     ;
 
 stateScript
@@ -37,7 +45,7 @@ stateSeparator
     ;
 
 functionDefinition
-    : 'function' Identifier parameterList '{' statement* '}'
+    : Identifier parameterList '{' statement* '}'
     ;
 
 parameterList
