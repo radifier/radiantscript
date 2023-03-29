@@ -1,5 +1,7 @@
 contract Test(int x) {
-    function hello(int t) {
-        require(x % true > t);
+    return {
+        hello(int t) {
+            require(x % true > t);
+        }
     }
 }

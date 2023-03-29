@@ -1,9 +1,11 @@
 contract Test() {
-    function unlock(int a, int b) {
-        require(a == c);
-    }
+    return {
+        unlock(int a, int b) {
+            require(a == c);
+        },
 
-    function spend(int c, int d) {
-        require(c == d);
+        spend(int c, int d) {
+            require(c == d);
+        }
     }
 }

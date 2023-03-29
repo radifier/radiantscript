@@ -49,6 +49,16 @@ export function generateArtifact(ast: Ast, script: Script): Artifact {
     })), ...scriptParams],
   }));
 
+  // If there are no functions returned then create the default unlock function
+  if (contract.functions.length === 0) {
+    abi.push({
+      type: 'function',
+      name: 'unlock',
+      index: 0,
+      params: scriptParams,
+    });
+  }
+
   abi.push({
     type: 'constructor',
     params: constructorParams,

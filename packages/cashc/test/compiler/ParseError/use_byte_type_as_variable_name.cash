@@ -1,6 +1,8 @@
 contract IntToByte() {
-    function hello(int a, byte b) {
-        byte byte = byte(a);
-        require(b == byte);
+    return {
+        hello(int a, byte b) {
+            byte byte = byte(a);
+            require(b == byte);
+        }
     }
 }

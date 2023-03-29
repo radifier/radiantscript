@@ -5,16 +5,18 @@ contract TransferWithTimeout(
     pubkey recipient,
     int timeout
 ) {
-    // Require recipient's signature to match
-    function transfer(sig recipientSig) {
-        require(checkSig(recipientSig, recipient));
-    }
+    return {
+        // Require recipient's signature to match
+        transfer(sig recipientSig) {
+            require(checkSig(recipientSig, recipient));
+        },
 
-    // Require timeout time to be reached and sender's signature to match
-    function timeout(sig senderSig) {
-        require(checkSig(senderSig, sender));
-        if (timeout > 0) {
-            timeout = 0;
+        // Require timeout time to be reached and sender's signature to match
+        timeout(sig senderSig) {
+            require(checkSig(senderSig, sender));
+            if (timeout > 0) {
+                timeout = 0;
+            }
         }
     }
 }

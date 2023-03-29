@@ -1,5 +1,7 @@
 contract Test() {
-    function hello(bool s) {
-        require([s, true]);
+    return {
+        hello(bool s) {
+            require([s, true]);
+        }
     }
 }

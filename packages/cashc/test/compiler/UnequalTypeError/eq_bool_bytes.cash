@@ -1,5 +1,7 @@
 contract Test() {
-    function hello(sig s) {
-        require(bytes(s) == true);
+    return {
+        hello(sig s) {
+            require(bytes(s) == true);
+        }
     }
 }

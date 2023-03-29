@@ -1,9 +1,11 @@
 contract Test() {
-    function hello() {
-        require(world);
-    }
+    return {
+        hello() {
+            require(world);
+        },
 
-    function world(int a) {
-        require(a + 5 == 10);
+        world(int a) {
+            require(a + 5 == 10);
+        }
     }
 }

@@ -1,8 +1,10 @@
 contract Test() {
-    function hello(sig s, pubkey pk) {
-        int v = 10;
-        string v = 'hello';
+    return {
+        hello(sig s, pubkey pk) {
+            int v = 10;
+            string v = 'hello';
 
-        require(checkSig(s, pk));
+            require(checkSig(s, pk));
+        }
     }
 }

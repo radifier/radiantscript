@@ -1,7 +1,9 @@
 contract Test() {
-    function hello() {
-    }
+    return {
+        hello() {
+        },
 
-    function world() {
+        world() {
+        }
     }
 }

@@ -14,18 +14,13 @@ export const fixtures: Fixture[] = [
       contract: 'P2PKH',
       abi: [
         {
-          type: 'function', index: 0, name: 'spend', params: [{ name: 'pk', type: 'PubKey' }, { name: 's', type: 'Sig' }],
+          type: 'function', index: 0, name: 'spend', params: [{ name: 's', type: 'Sig' }, { name: 'pk', type: 'PubKey' }],
         },
         {
           type: 'constructor', params: [{ name: 'pkh', type: 'Ripemd160' }],
         },
       ],
-      asm:
-        '$pkh '
-        // require(hash160(pk) == pkh)
-        + 'OP_2 OP_PICK OP_HASH160 OP_EQUALVERIFY OP_SWAP '
-        // require(checkSig(s, pk))
-        + 'OP_CHECKSIG',
+      asm: 'OP_DUP OP_HASH160 $pkh OP_EQUALVERIFY OP_CHECKSIG',
     },
   },
   {
@@ -38,10 +33,10 @@ export const fixtures: Fixture[] = [
         {
           type: 'function', index: 0, name: 'hello', params: [{ name: 'pk', type: 'PubKey' }, { name: 's', type: 'Sig' }],
         },
-        { type: 'constructor', params: [{ name: 'x', type: 'int' }, { name: 'y', type: 'string' }] },
+        { type: 'constructor', params: [{ name: '_x', type: 'int' }, { name: '_y', type: 'string' }] },
       ],
       asm:
-        '$y $x '
+        '$_y $_x '
         // int myVariable = 10 - 4
         + 'OP_10 OP_4 OP_SUB '
         // int myOtherVariable = 20 + myVariable % 2
@@ -114,18 +109,17 @@ export const fixtures: Fixture[] = [
         { type: 'constructor', params: [{ name: 'sender', type: 'PubKey' }, { name: 'recipient', type: 'PubKey' }, { name: 'timeout', type: 'int' }] },
       ],
       asm:
-        '$timeout $recipient $sender '
         // function transfer
-        + 'OP_3 OP_PICK OP_0 OP_NUMEQUAL OP_IF '
+        'OP_DUP OP_0 OP_NUMEQUAL OP_IF '
         // require(checkSig(recipientSig, recipient))
-        + 'OP_4 OP_ROLL OP_ROT OP_CHECKSIG '
-        + 'OP_NIP OP_NIP OP_NIP OP_ELSE '
+        + 'OP_SWAP $recipient OP_CHECKSIG '
+        + 'OP_NIP OP_ELSE '
         // function timeout
-        + 'OP_3 OP_ROLL OP_1 OP_NUMEQUALVERIFY '
+        + 'OP_1 OP_NUMEQUALVERIFY '
         // require(checkSig(senderSig, sender))
-        + 'OP_3 OP_ROLL OP_SWAP OP_CHECKSIGVERIFY '
+        + '$sender OP_CHECKSIGVERIFY '
         // require(tx.time >= timeout)
-        + 'OP_SWAP OP_CHECKLOCKTIMEVERIFY OP_2DROP OP_1 '
+        + '$timeout OP_CHECKLOCKTIMEVERIFY OP_DROP OP_1 '
         + 'OP_ENDIF',
     },
   },
@@ -205,7 +199,7 @@ export const fixtures: Fixture[] = [
       ],
       asm:
         // require(checkMultiSig([s1, s2], [pk1, pk2, pk3]))
-        '$pk3 $pk2 $pk1 OP_0 OP_2ROT OP_2 OP_2ROT OP_SWAP OP_6 OP_ROLL OP_3 OP_CHECKMULTISIG',
+        'OP_0 OP_ROT OP_ROT OP_2 $pk1 $pk2 $pk3 OP_3 OP_CHECKMULTISIG'
     },
   },
   {
@@ -218,10 +212,10 @@ export const fixtures: Fixture[] = [
         {
           type: 'function', index: 0, name: 'spend', params: [],
         },
-        { type: 'constructor', params: [{ name: 'b', type: 'bytes' }] },
+        { type: 'constructor', params: [{ name: '_b', type: 'bytes' }] },
       ],
       asm:
-        '$b '
+        '$_b '
         // bytes x = b.split(b.length / 2)[1]
         + 'OP_DUP OP_DUP OP_SIZE OP_NIP OP_2 OP_DIV OP_SPLIT OP_NIP '
         // require(x != b)
@@ -269,15 +263,15 @@ export const fixtures: Fixture[] = [
         {
           type: 'constructor',
           params: [
-            { name: 'ownerPk', type: 'PubKey' },
-            { name: 'oraclePk', type: 'PubKey' },
-            { name: 'minBlock', type: 'int' },
-            { name: 'priceTarget', type: 'int' },
+            { name: '_ownerPk', type: 'PubKey' },
+            { name: '_oraclePk', type: 'PubKey' },
+            { name: '_minBlock', type: 'int' },
+            { name: '_priceTarget', type: 'int' },
           ],
         },
       ],
       asm:
-        '$priceTarget $minBlock $oraclePk $ownerPk '
+        '$_priceTarget $_minBlock $_oraclePk $_ownerPk '
         // bytes4 blockHeightBin, bytes4 priceBin = oracleMessage.split(4);
         + 'OP_4 OP_PICK OP_4 OP_SPLIT '
         // int blockHeight = int(blockHeightBin);
@@ -362,9 +356,8 @@ export const fixtures: Fixture[] = [
         },
       ],
       asm:
-        '$requiredVersion '
         // require(tx.version == requiredVersion)
-        + 'OP_TXVERSION OP_NUMEQUALVERIFY '
+        'OP_TXVERSION $requiredVersion OP_NUMEQUALVERIFY '
         // require(tx.bytecode == 0x00)
         + 'OP_ACTIVEBYTECODE 00 OP_EQUAL',
     },
@@ -430,15 +423,15 @@ export const fixtures: Fixture[] = [
         {
           type: 'constructor',
           params: [
-            { name: 'recipient', type: 'Ripemd160' },
-            { name: 'funder', type: 'Ripemd160' },
-            { name: 'pledge', type: 'int' },
-            { name: 'period', type: 'int' },
+            { name: '_recipient', type: 'Ripemd160' },
+            { name: '_funder', type: 'Ripemd160' },
+            { name: '_pledge', type: 'int' },
+            { name: '_period', type: 'int' },
           ],
         },
       ],
       asm:
-        '$period $pledge $funder $recipient '
+        '$_period $_pledge $_funder $_recipient '
         // function receive
         + 'OP_4 OP_PICK OP_0 OP_NUMEQUAL OP_IF '
         // require(tx.age >= period)
@@ -756,7 +749,7 @@ export const fixtures: Fixture[] = [
         {
           type: 'function',
           index: 0,
-          name: 'spend',
+          name: 'unlock',
           params: [
             {
               name: 's',

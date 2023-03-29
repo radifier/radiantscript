@@ -1,6 +1,8 @@
 contract Test() {
-    function split(bytes32 b) {
-        bytes16 x, bytes16 y =  b.split(16);
-        require(x == y);
+    return {
+        split(bytes32 b) {
+            bytes16 x, bytes16 y =  b.split(16);
+            require(x == y);
+        }
     }
 }

@@ -1,6 +1,8 @@
 contract CastHashChecksig() {
-    function hello(pubkey pk, sig s) {
-        require((ripemd160(bytes(pk)) == hash160(0x) == !true));
-        require(checkSig(s, pk));
+    return {
+        hello(pubkey pk, sig s) {
+            require((ripemd160(bytes(pk)) == hash160(0x) == !true));
+            require(checkSig(s, pk));
+        }
     }
 }

@@ -1,5 +1,7 @@
 contract Test() {
-    function test1(string s) {
-        string x, y = s.split(5);
+    return {
+        test1(string s) {
+            string x, y = s.split(5);
+        }
     }
 }

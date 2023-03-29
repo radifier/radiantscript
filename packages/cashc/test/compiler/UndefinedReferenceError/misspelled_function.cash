@@ -1,10 +1,12 @@
 contract Test(int x) {
-    function hello() {
-        // cspell:disable-next-line
-        require(withn(1, 0, 2));
-    }
+    return {
+        hello() {
+            // cspell:disable-next-line
+            require(withn(1, 0, 2));
+        },
 
-    function world(int a) {
-        require(a + 5 == 10);
+        world(int a) {
+            require(a + 5 == 10);
+        }
     }
 }

@@ -79,6 +79,7 @@ import {
 import { CashScriptVisitor } from '../grammar/CashScriptVisitor.js';
 import { Location } from './Location.js';
 import {
+  Modifier,
   NumberUnit,
   PushRefOp,
   TimeOp,
@@ -131,9 +132,12 @@ export default class AstBuilder
 
   visitContractDefinition(ctx: ContractDefinitionContext): ContractNode {
     const name = ctx.Identifier().text;
-    const contractParameters = ctx.parameterList()[0]?.parameter().map(
-      (p) => this.visit(p) as ParameterNode,
-    ) || [];
+    const contractParameters = ctx.parameterList()[0]?.parameter().map((p) => {
+      const node = this.visit(p) as ParameterNode;
+      // Force all contract parameters to be inline
+      node.modifier = Modifier.INLINE;
+      return node;
+    }) || [];
     const functionParameters = ctx.parameterList()[1]?.parameter().map(
       (p) => this.visit(p) as ParameterNode,
     ) || [];

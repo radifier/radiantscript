@@ -1,7 +1,10 @@
-contract SplitSize(bytes b) {
-    function spend() {
-        bytes x = b.split(b.length / 2)[1];
-        require(x != b);
-        require(b.split(4)[0] != x);
+contract SplitSize(bytes _b) {
+    bytes b = _b;
+    return {
+        spend() {
+            bytes x = b.split(b.length / 2)[1];
+            require(x != b);
+            require(b.split(4)[0] != x);
+        }
     }
 }

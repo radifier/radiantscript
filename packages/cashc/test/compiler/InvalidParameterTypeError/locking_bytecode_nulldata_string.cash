@@ -1,7 +1,9 @@
 pragma radiantscript ^0.1.0;
 
 contract P2PKH() {
-    function spend() {
-        require(tx.outputs[0].lockingBytecode == new LockingBytecodeNullData(["Hello world"]));
+    return {
+        spend() {
+            require(tx.outputs[0].lockingBytecode == new LockingBytecodeNullData(["Hello world"]));
+        }
     }
 }

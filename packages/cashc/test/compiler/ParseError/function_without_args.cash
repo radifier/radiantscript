@@ -1,7 +1,9 @@
 contract Test(int x, string y) {
-    function hello {
-    }
+    return {
+        hello {
+        },
 
-    function world(int a) {
+        world(int a) {
+        }
     }
 }

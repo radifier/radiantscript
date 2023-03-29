@@ -1,4 +1,6 @@
 contract Test(int x, string y) {
-    function bytes(sig s, pubkey pk) {
+    return {
+        bytes(sig s, pubkey pk) {
+        }
     }
 }

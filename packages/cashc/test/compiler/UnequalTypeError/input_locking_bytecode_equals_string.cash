@@ -1,5 +1,7 @@
 contract Test() {
-    function spend() {
-        require(tx.inputs[0].lockingBytecode == "0x01");
+    return {
+        spend() {
+            require(tx.inputs[0].lockingBytecode == "0x01");
+        }
     }
 }

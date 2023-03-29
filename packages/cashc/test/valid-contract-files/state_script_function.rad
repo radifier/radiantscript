@@ -1,7 +1,7 @@
 pragma radiantscript ^0.1.0;
 
-contract StateScriptFunction(bytes36 inline REF)
-(int stateOnlyVar, int stateVar, int stateVarInIf) {
+contract StateScriptFunction(bytes36 REF)
+function (int stateOnlyVar, int stateVar, int stateVarInIf) {
     pushInputRef(REF);
     stateOnlyVar = stateOnlyVar + 1;
     if (true) {
@@ -10,11 +10,13 @@ contract StateScriptFunction(bytes36 inline REF)
     require(stateVar == 1);
     stateSeparator;
 
-    function function1(int functionVar) {
-        require(stateVar + functionVar == 3);
-    }
+    return {
+        function1(int functionVar) {
+            require(stateVar + functionVar == 3);
+        },
 
-    function function2(int functionVar) {
-        require(stateVar + functionVar == 4);
+        function2(int functionVar) {
+            require(stateVar + functionVar == 4);
+        }
     }
 }

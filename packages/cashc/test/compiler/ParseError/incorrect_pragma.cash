@@ -2,11 +2,13 @@
 pragma cashscrip 0.2.0;
 
 contract Test() {
-    function hello(sig s, pubkey pk) {
-        require(checkSig(s, pk));
-    }
+    return {
+        hello(sig s, pubkey pk) {
+            require(checkSig(s, pk));
+        },
 
-    function world(int a) {
-        require(a + 5 == 10);
+        world(int a) {
+            require(a + 5 == 10);
+        }
     }
 }

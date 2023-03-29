@@ -1,5 +1,7 @@
 contract Test(int x, string y) {
-    function hello() {
-        require(x.length > y.length);
+    return {
+        hello() {
+            require(x.length > y.length);
+        }
     }
 }

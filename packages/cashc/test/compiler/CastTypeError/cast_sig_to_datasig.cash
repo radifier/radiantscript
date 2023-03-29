@@ -1,5 +1,7 @@
 contract Test(sig s, pubkey pk) {
-    function cds(bytes data) {
-        require(checkDataSig(datasig(s), data, pk));
+    return {
+        cds(bytes data) {
+            require(checkDataSig(datasig(s), data, pk));
+        }
     }
 }

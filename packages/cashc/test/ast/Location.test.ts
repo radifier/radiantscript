@@ -10,6 +10,6 @@ describe('Location', () => {
     const f = ast.contract.functions[0];
 
     expect(f.location).toBeDefined();
-    expect((f.location!).text(code)).toEqual('function hello(sig s, pubkey pk) {\n        require(checkSig(s, pk));\n    }');
+    expect((f.location!).text(code)).toEqual('hello(sig s, pubkey pk) {\n            require(checkSig(s, pk));\n        }');
   });
 });

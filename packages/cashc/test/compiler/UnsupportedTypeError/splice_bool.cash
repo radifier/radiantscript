@@ -1,5 +1,7 @@
 contract Test(int x) {
-    function hello() {
-        require(true.split(x));
+    return {
+        hello() {
+            require(true.split(x));
+        }
     }
 }

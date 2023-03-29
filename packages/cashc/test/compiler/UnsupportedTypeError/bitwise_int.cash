@@ -1,5 +1,7 @@
 contract Test(int x, int y) {
-    function hello() {
-        require((x ^ y) == x);
+    return {
+        hello() {
+            require((x ^ y) == x);
+        }
     }
 }

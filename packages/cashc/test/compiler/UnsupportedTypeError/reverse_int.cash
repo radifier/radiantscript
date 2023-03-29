@@ -1,5 +1,7 @@
 contract Test(int x) {
-    function hello() {
-        require(x.reverse() == x);
+    return {
+        hello() {
+            require(x.reverse() == x);
+        }
     }
 }

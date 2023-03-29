@@ -25,11 +25,11 @@ versionOperator
     ;
 
 contractDefinition
-    : 'contract' Identifier '=' parameterList '=>' parameterList '=>' '{' stateScript? statement* functions? '}'
+    : 'contract' Identifier parameterList ('function' parameterList)? '{' stateScript? statement* functions? '}'
     ;
 
 functions
-    : 'return' '{' (functionDefinition (',' functionDefinition)* ','?)? '}'
+    : 'return' '{' (functionDefinition (',' functionDefinition)* ','?)? '}' ';'?
     ;
 
 mainIdentifier
@@ -155,7 +155,6 @@ expression
 
 modifier
     : 'constant'
-    | 'inline'
     ;
 
 literal
@@ -227,7 +226,7 @@ NullaryOp
     ;
 
 Identifier
-    : '$'? [a-zA-Z] [a-zA-Z0-9_]*
+    : '$'? [a-zA-Z_] [a-zA-Z0-9_]*
     ;
 
 WHITESPACE

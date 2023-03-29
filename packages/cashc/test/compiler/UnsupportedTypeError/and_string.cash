@@ -1,5 +1,7 @@
 contract Test() {
-    function hello(string who) {
-        require(who && "hello");
+    return {
+        hello(string who) {
+            require(who && "hello");
+        }
     }
 }

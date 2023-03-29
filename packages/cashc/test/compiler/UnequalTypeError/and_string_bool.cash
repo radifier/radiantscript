@@ -1,5 +1,7 @@
 contract Test() {
-    function hello(string s) {
-        require(s && true);
+    return {
+        hello(string s) {
+            require(s && true);
+        }
     }
 }

@@ -1,5 +1,7 @@
 contract Test() {
-    function unlock(int a, int b) {
-        int c = 0 + a + b + c;
+    return {
+        unlock(int a, int b) {
+            int c = 0 + a + b + c;
+        }
     }
 }

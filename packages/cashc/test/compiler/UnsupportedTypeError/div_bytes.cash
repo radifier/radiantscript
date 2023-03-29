@@ -1,5 +1,7 @@
 contract Test() {
-    function hello() {
-        require(0x50 / 0x40);
+    return {
+        hello() {
+            require(0x50 / 0x40);
+        }
     }
 }

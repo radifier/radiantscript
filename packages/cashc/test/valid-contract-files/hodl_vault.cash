@@ -4,30 +4,37 @@
 // Instead, a message with a block number and price from after the minBlock needs to be passed.
 // This contract serves as a simple example for checkDataSig-based contracts.
 contract HodlVault(
-    pubkey ownerPk,
-    pubkey oraclePk,
-    int minBlock,
-    int priceTarget
+    pubkey _ownerPk,
+    pubkey _oraclePk,
+    int _minBlock,
+    int _priceTarget
 ) {
-    function spend(sig ownerSig, datasig oracleSig, bytes8 oracleMessage) {
-        // message: { blockHeight, price }
-        bytes4 blockHeightBin, bytes4 priceBin = oracleMessage.split(4);
-        int blockHeight = int(blockHeightBin);
-        int price = int(priceBin);
+    int priceTarget = _priceTarget;
+    int minBlock = _minBlock;
+    pubkey oraclePk = _oraclePk;
+    pubkey ownerPk = _ownerPk;
 
-        // Check that blockHeight is after minBlock and not in the future
-        require(blockHeight >= minBlock);
-        require(tx.time >= blockHeight);
+    return {
+        spend(sig ownerSig, datasig oracleSig, bytes8 oracleMessage) {
+            // message: { blockHeight, price }
+            bytes4 blockHeightBin, bytes4 priceBin = oracleMessage.split(4);
+            int blockHeight = int(blockHeightBin);
+            int price = int(priceBin);
 
-        // Check that current price is at least priceTarget
-        require(price >= priceTarget);
+            // Check that blockHeight is after minBlock and not in the future
+            require(blockHeight >= minBlock);
+            require(tx.time >= blockHeight);
 
-        // Handle necessary signature checks
-        require(checkDataSig(
-            oracleSig,
-            oracleMessage,
-            oraclePk,
-        ));
-        require(checkSig(ownerSig, ownerPk));
+            // Check that current price is at least priceTarget
+            require(price >= priceTarget);
+
+            // Handle necessary signature checks
+            require(checkDataSig(
+                oracleSig,
+                oracleMessage,
+                oraclePk,
+            ));
+            require(checkSig(ownerSig, ownerPk));
+        }
     }
 }

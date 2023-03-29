@@ -1,5 +1,7 @@
 contract Test() {
-    function hello() {
-        require(LockingBytecodeP2PKH(bytes20(0)) == bytes34(0));
+    return {
+        hello() {
+            require(LockingBytecodeP2PKH(bytes20(0)) == bytes34(0));
+        }
     }
 }

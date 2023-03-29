@@ -39,12 +39,12 @@ export const fixtures: Fixture[] = [
     ast: new SourceFileNode(
       new ContractNode(
         'P2PKH',
-        [new ParameterNode(new BytesType(20), 'pkh')],
+        [new ParameterNode(new BytesType(20), 'pkh', 'inline')],
         [new FunctionDefinitionNode(
           'spend',
           [
-            new ParameterNode(PrimitiveType.PUBKEY, 'pk'),
             new ParameterNode(PrimitiveType.SIG, 's'),
+            new ParameterNode(PrimitiveType.PUBKEY, 'pk'),
           ],
           new BlockNode([
             new RequireNode(
@@ -70,7 +70,7 @@ export const fixtures: Fixture[] = [
     ast: new SourceFileNode(
       new ContractNode(
         'Reassignment',
-        [new ParameterNode(PrimitiveType.INT, 'x'), new ParameterNode(PrimitiveType.STRING, 'y')],
+        [new ParameterNode(PrimitiveType.INT, '_x', 'inline'), new ParameterNode(PrimitiveType.STRING, '_y', 'inline')],
         [new FunctionDefinitionNode(
           'hello',
           [new ParameterNode(PrimitiveType.PUBKEY, 'pk'), new ParameterNode(PrimitiveType.SIG, 's')],
@@ -143,7 +143,7 @@ export const fixtures: Fixture[] = [
     ast: new SourceFileNode(
       new ContractNode(
         'MultiFunctionIfStatements',
-        [new ParameterNode(PrimitiveType.INT, 'x'), new ParameterNode(PrimitiveType.INT, 'y')],
+        [new ParameterNode(PrimitiveType.INT, 'x', 'inline'), new ParameterNode(PrimitiveType.INT, 'y', 'inline')],
         [
           new FunctionDefinitionNode(
             'transfer',
@@ -299,9 +299,9 @@ export const fixtures: Fixture[] = [
       new ContractNode(
         'MultiSig',
         [
-          new ParameterNode(PrimitiveType.PUBKEY, 'pk1'),
-          new ParameterNode(PrimitiveType.PUBKEY, 'pk2'),
-          new ParameterNode(PrimitiveType.PUBKEY, 'pk3'),
+          new ParameterNode(PrimitiveType.PUBKEY, 'pk1', 'inline'),
+          new ParameterNode(PrimitiveType.PUBKEY, 'pk2', 'inline'),
+          new ParameterNode(PrimitiveType.PUBKEY, 'pk3', 'inline'),
         ],
         [new FunctionDefinitionNode(
           'spend',
@@ -337,10 +337,10 @@ export const fixtures: Fixture[] = [
       new ContractNode(
         'HodlVault',
         [
-          new ParameterNode(PrimitiveType.PUBKEY, 'ownerPk'),
-          new ParameterNode(PrimitiveType.PUBKEY, 'oraclePk'),
-          new ParameterNode(PrimitiveType.INT, 'minBlock'),
-          new ParameterNode(PrimitiveType.INT, 'priceTarget'),
+          new ParameterNode(PrimitiveType.PUBKEY, '_ownerPk', 'inline'),
+          new ParameterNode(PrimitiveType.PUBKEY, '_oraclePk', 'inline'),
+          new ParameterNode(PrimitiveType.INT, '_minBlock', 'inline'),
+          new ParameterNode(PrimitiveType.INT, '_priceTarget', 'inline'),
         ],
         [new FunctionDefinitionNode(
           'spend',
@@ -574,10 +574,10 @@ export const fixtures: Fixture[] = [
       new ContractNode(
         'Mecenas',
         [
-          new ParameterNode(new BytesType(20), 'recipient'),
-          new ParameterNode(new BytesType(20), 'funder'),
-          new ParameterNode(PrimitiveType.INT, 'pledge'),
-          new ParameterNode(PrimitiveType.INT, 'period'),
+          new ParameterNode(new BytesType(20), '_recipient', 'inline'),
+          new ParameterNode(new BytesType(20), '_funder', 'inline'),
+          new ParameterNode(PrimitiveType.INT, '_pledge', 'inline'),
+          new ParameterNode(PrimitiveType.INT, '_period', 'inline'),
         ],
         [
           new FunctionDefinitionNode(

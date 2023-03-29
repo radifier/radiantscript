@@ -1,5 +1,7 @@
 contract Test() {
-    function hello() {
-        require(-true);
+    return {
+        hello() {
+            require(-true);
+        }
     }
 }

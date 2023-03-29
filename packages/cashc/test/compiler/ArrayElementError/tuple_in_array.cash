@@ -1,6 +1,8 @@
 contract Test() {
-    function hello() {
-        int x = [1, 2, 0x0010.split(1)];
-        require(x > 1);
+    return {
+        hello() {
+            int x = [1, 2, 0x0010.split(1)];
+            require(x > 1);
+        }
     }
 }

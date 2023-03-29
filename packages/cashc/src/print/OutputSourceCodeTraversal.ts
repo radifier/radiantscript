@@ -61,6 +61,9 @@ export default class OutputSourceCodeTraversal extends AstTraversal {
   visitContract(node: ContractNode): Node {
     this.addOutput(`contract ${node.name}(`, true);
     node.parameters = this.visitCommaList(node.parameters) as ParameterNode[];
+    if (node.functionParameters.length > 0) {
+      this.addOutput('\nfunction ');
+    }
     node.functionParameters = this.visitCommaList(node.functionParameters) as ParameterNode[];
     this.addOutput(') {');
     this.outputSymbolTable(node.symbolTable);
@@ -69,7 +72,11 @@ export default class OutputSourceCodeTraversal extends AstTraversal {
     this.indent();
     node.stateScript = node.stateScript && this.visit(node.stateScript) as StateScriptNode;
     node.statements = this.visitOptionalList(node.statements) as StatementNode[];
-    node.functions = this.visitList(node.functions) as FunctionDefinitionNode[];
+    if (node.functions.length > 0) {
+      this.addOutput('return {\n');
+      node.functions = this.visitList(node.functions) as FunctionDefinitionNode[];
+      this.addOutput('}\n');
+    }
     this.unindent();
 
     this.addOutput('}\n', true);
@@ -77,14 +84,14 @@ export default class OutputSourceCodeTraversal extends AstTraversal {
   }
 
   visitFunctionDefinition(node: FunctionDefinitionNode): Node {
-    this.addOutput(`function ${node.name}(`, true);
+    this.addOutput(`${node.name}(`, true);
     node.parameters = this.visitCommaList(node.parameters) as ParameterNode[];
     this.addOutput(')');
     this.outputSymbolTable(node.symbolTable);
     this.addOutput(' ');
 
     node.body = this.visit(node.body) as BlockNode;
-    this.addOutput('\n');
+    this.addOutput(',\n');
 
     return node;
   }

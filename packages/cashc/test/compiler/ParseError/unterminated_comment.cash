@@ -4,14 +4,16 @@
 
 contract Test(int x, string y) {
     // Line comments are a thing
-    function hello(sig s, pubkey pk) {
-        int i = 400 + x;
-        bytes b = 0x07364897987fe87 + bytes(x);
+    return {
+        hello(sig s, pubkey pk) {
+            int i = 400 + x;
+            bytes b = 0x07364897987fe87 + bytes(x);
 
-        int myVariable = 10 - 4; // they can go at the end of the line
-        int myOtherVariable = i + myVariable % 2;
-        require(myOtherVariable /* And comments can be included within lines */ > i);
-    /* Comments do need to be terminated though
-        require(ripemd160(b) == ripemd160(y));
+            int myVariable = 10 - 4; // they can go at the end of the line
+            int myOtherVariable = i + myVariable % 2;
+            require(myOtherVariable /* And comments can be included within lines */ > i);
+        /* Comments do need to be terminated though
+            require(ripemd160(b) == ripemd160(y));
+        }
     }
 }

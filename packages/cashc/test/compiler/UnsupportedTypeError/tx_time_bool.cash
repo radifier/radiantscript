@@ -1,5 +1,7 @@
 contract Test(int x) {
-    function hello() {
-        require(tx.time >= bool(x));
+    return {
+        hello() {
+            require(tx.time >= bool(x));
+        }
     }
 }

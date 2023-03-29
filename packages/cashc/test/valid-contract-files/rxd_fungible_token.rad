@@ -1,14 +1,13 @@
 pragma radiantscript ^0.1.0;
 
-contract FungibleToken(bytes36 inline REF, bytes20 inline PKH)(sig s, pubkey pk) {
+contract FungibleToken(bytes36 REF, bytes20 PKH)
+function (sig s, pubkey pk) {
     require(hash160(pk) == PKH);
     require(checkSig(s, pk));
     stateSeparator;
 
-    function spend() {
-        bytes36 ref = pushInputRef(REF);
-        bytes32 csh = hash256(tx.inputs[this.activeInputIndex].codeScript);
-        require(tx.outputs.codeScriptCount(csh) == tx.outputs.refOutputCount(ref));
-        require(tx.inputs.codeScriptValueSum(csh) == tx.outputs.codeScriptValueSum(csh));
-    }
+    bytes36 ref = pushInputRef(REF);
+    bytes32 csh = hash256(tx.inputs[this.activeInputIndex].codeScript);
+    require(tx.outputs.codeScriptCount(csh) == tx.outputs.refOutputCount(ref));
+    require(tx.inputs.codeScriptValueSum(csh) == tx.outputs.codeScriptValueSum(csh));
 }
